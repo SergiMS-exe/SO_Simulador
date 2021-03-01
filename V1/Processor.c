@@ -203,6 +203,20 @@ void Processor_DecodeAndExecuteInstruction() {
 			registerPSW_CPU=Processor_CopyFromSystemStack(MAINMEMORYSIZE-2);
 			break;		
 
+		// Instruction MEMADD
+		case MEMADD_INST:
+			// Tell the main memory controller from where
+			registerMAR_CPU=operand2;
+			// Send to the main memory controller the address in which the reading has to take place: use the address bus for this
+			Buses_write_AddressBus_From_To(CPU, MAINMEMORY);
+			// Tell the main memory controller to read
+			registerCTRL_CPU=CTRLREAD;
+			// Send to the main memory controller the operation
+			Buses_write_ControlBus_From_To(CPU,MAINMEMORY);
+			registerAccumulator_CPU=operand1+registerMBR_CPU.cell;
+			registerPC_CPU++;
+			break;
+
 		// Unknown instruction
 		default : 
 			operationCode=NONEXISTING_INST;
