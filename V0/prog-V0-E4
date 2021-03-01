@@ -1,0 +1,13 @@
+55 //Tamanio 
+ADD 10 0 //Entre el 21 y el 43 hay 11 numeros pares. Este sera nuestro contador
+WRITE 20 // Lo guardamos en memoria, celda 20
+
+ADD 22 0 //Empezamos en 22, el primer numero par
+WRITE 90 //Escribimos 22 en la posicion de memoria 90
+MEMADD 2 90 //Aniadimos 2 al PC para luego meterlo en memoria
+WRITE 90
+MEMADD -1 20 //Cogemos el contador de la posicion de memoria 20 y restamos uno
+WRITE 20 
+ZJUMP 2 //Si el contador  es 0 acabamos
+JUMP -5 // Si no, vuelta al bucle
+HALT

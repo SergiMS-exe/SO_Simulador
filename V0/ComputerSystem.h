@@ -8,6 +8,8 @@ void ComputerSystem_PowerOn(int argc, char *argv[]);
 void ComputerSystem_PowerOff();
 void ComputerSystem_DebugMessage(int , char,  ...);
 
+#define NAME_OF_THE_PROGRAM_TO_EXECUTE "nameOfTheProgramToBeExecuted"
+
 // General parameters of the global Computer System
 #define PROGRAM_TO_BE_EXECUTED "programToBeExecuted"
 

@@ -1,0 +1,15 @@
+55 //Tamanio del programa
+ADD 10 0 //Vamos a hacer 10 iteraciones de este bucle
+WRITE 20 
+
+ADD 1 0 //Empezamos en el 1
+WRITE 128 
+
+READ 128
+SHIFT -1 //Movemos los bits a la izquierda (pasamos de 2^0 a 2^1 en la primera iteracion)
+WRITE 128
+MEMADD -1 20
+WRITE 20
+ZJUMP 2
+JUMP -6
+HALT

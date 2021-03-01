@@ -64,6 +64,7 @@ void ComputerSystem_PowerOn(int argc, char *argv[]) {
 
 // Powers off the CS (the C program ends)
 void ComputerSystem_PowerOff() {
+	ComputerSystem_DebugMessage(99, SHUTDOWN);
 	exit(0);
 }
 
