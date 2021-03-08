@@ -35,10 +35,13 @@ void ComputerSystem_PowerOn(int argc, char *argv[], int paramIndex) {
 	// Prepare if necesary the assert system
 	Asserts_LoadAsserts();
 
+	// Show the user programs loaded 
+	// V1 Ej2
+	ComputerSystem_PrintProgramList();
+
 	// Request the OS to do the initial set of tasks. The last one will be
 	// the processor allocation to the process with the highest priority
 	OperatingSystem_Initialize(daemonsBaseIndex);
-	
 	// Tell the processor to begin its instruction cycle 
 	// HOOKEABLE(Processor_InstructionCycleLoop)();
 	Processor_InstructionCycleLoop();
@@ -54,3 +57,16 @@ void ComputerSystem_PowerOff() {
 
 /////////////////////////////////////////////////////////
 //  New functions below this line  //////////////////////
+
+// V1 Ej 1
+void ComputerSystem_PrintProgramList() {
+	int i;
+	int len = sizeof(programList)/sizeof(programList[1]);
+	ComputerSystem_DebugMessage(101, INIT);
+	for (i=1; i<len; i++) {
+		if (programList[i]!=NULL)
+			ComputerSystem_DebugMessage(102, INIT, programList[i]->executableName, programList[i]->arrivalTime);
+		else
+			break;
+	}
+}

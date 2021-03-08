@@ -54,16 +54,16 @@ int Messages_Load_Messages(int numberOfmessages, char * nameFileMessage) {
 				}
 		}
 	}
-  fclose(mf);
+	fclose(mf);
 
-  // Remove when finish debug.... 
-  // for (rc=0;rc<NUMBEROFMSGS;rc++)
-  // 	printf("Position: %d, Message number: %d, Message format: %s\n",rc,DebugMessages[rc].number,DebugMessages[rc].format); 
+	// Remove when finish debug.... 
+	// for (rc=0;rc<NUMBEROFMSGS;rc++)
+	// 	printf("Position: %d, Message number: %d, Message format: %s\n",rc,DebugMessages[rc].number,DebugMessages[rc].format); 
 
-  // printf("%d Messages Loaded\n",nm);
-  ComputerSystem_DebugMessage(63,POWERON,(numberOfmessages-initialMessage), nameFileMessage);
+	// printf("%d Messages Loaded\n",nm);
+	ComputerSystem_DebugMessage(63,POWERON,(numberOfmessages-initialMessage), nameFileMessage);
 
-  return numberOfmessages;
+	return numberOfmessages;
 }
 
 int Messages_Get_Pos(int number) {

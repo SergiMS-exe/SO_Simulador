@@ -80,7 +80,7 @@ void OperatingSystem_Initialize(int daemonsIndex) {
 	
 	// Create all user processes from the information given in the command line
 	OperatingSystem_LongTermScheduler();
-	
+		
 	if (strcmp(programList[processTable[sipID].programListIndex]->executableName,"SystemIdleProcess")) {
 		// Show red message "FATAL ERROR: Missing SIP program!\n"
 		ComputerSystem_DebugMessage(99,SHUTDOWN,"FATAL ERROR: Missing SIP program!\n");
@@ -96,6 +96,7 @@ void OperatingSystem_Initialize(int daemonsIndex) {
 
 	// Initial operation for Operating System
 	Processor_SetPC(OS_address_base);
+	
 }
 
 // Daemon processes are system processes, that is, they work together with the OS.
@@ -125,11 +126,29 @@ int OperatingSystem_LongTermScheduler() {
 	
 	for (i=0; programList[i]!=NULL && i<PROGRAMSMAXNUMBER ; i++) {
 		PID=OperatingSystem_CreateProcess(i);
-		numberOfSuccessfullyCreatedProcesses++;
-		if (programList[i]->type==USERPROGRAM) 
-			numberOfNotTerminatedUserProcesses++;
-		// Move process to the ready state
-		OperatingSystem_MoveToTheREADYState(PID);
+		if (PID==NOFREEENTRY)
+			ComputerSystem_DebugMessage(103, ERROR, programList[i]->executableName);
+		else if (PID==PROGRAMDOESNOTEXIST)
+			ComputerSystem_DebugMessage(104, ERROR, programList[i]->executableName, "it does not exists");
+		else if (PID==PROGRAMNOTVALID)
+			ComputerSystem_DebugMessage(104, ERROR, programList[i]->executableName, "invalid priority or size");
+		else {
+			numberOfSuccessfullyCreatedProcesses++;
+			if (programList[i]->type==USERPROGRAM) 
+				numberOfNotTerminatedUserProcesses++;
+			// Move process to the ready state
+			OperatingSystem_MoveToTheREADYState(PID);
+		}
+	}
+
+	if (numberOfNotTerminatedUserProcesses==0) {
+		if (executingProcessID==sipID) {
+			// finishing sipID, change PC to address of OS HALT instruction
+			OperatingSystem_TerminatingSIP();
+			ComputerSystem_DebugMessage(99,SHUTDOWN,"The system will shut down now...\n");
+		}
+		// Simulation must finish, telling sipID to finish
+		OperatingSystem_ReadyToShutdown();
 	}
 
 	// Return the number of succesfully created processes
@@ -149,6 +168,8 @@ int OperatingSystem_CreateProcess(int indexOfExecutableProgram) {
 
 	// Obtain a process ID
 	PID=OperatingSystem_ObtainAnEntryInTheProcessTable();
+	if (PID==NOFREEENTRY)
+		return NOFREEENTRY;
 
 	// Check if programFile exists
 	programFile=fopen(executableProgram->executableName, "r");
@@ -162,6 +183,9 @@ int OperatingSystem_CreateProcess(int indexOfExecutableProgram) {
 	// Obtain the priority for the process
 	priority=OperatingSystem_ObtainPriority(programFile);
 	
+	if (processSize==PROGRAMNOTVALID || priority==PROGRAMNOTVALID)
+		return PROGRAMNOTVALID;
+
 	// Obtain enough memory space
  	loadingPhysicalAddress=OperatingSystem_ObtainMainMemory(processSize, PID);
 
