@@ -24,6 +24,7 @@ int OperatingSystem_ShortTermScheduler();
 int OperatingSystem_ExtractFromReadyToRun();
 void OperatingSystem_HandleException();
 void OperatingSystem_HandleSystemCall();
+void OperatingSystem_PrintReadyToRunQueue();
 
 // The process table
 PCB processTable[PROCESSTABLEMAXSIZE];
@@ -38,7 +39,7 @@ int executingProcessID=NOPROCESS;
 int sipID;
 
 // Initial PID for assignation
-int initialPID=0;
+int initialPID=PROCESSTABLEMAXSIZE-1;
 
 // Begin indes for daemons in programList
 int baseDaemonsInProgramList; 
@@ -52,7 +53,6 @@ int numberOfNotTerminatedUserProcesses=0;
 
 // Initial set of tasks of the OS
 void OperatingSystem_Initialize(int daemonsIndex) {
-	
 	int i, selectedProcess;
 	FILE *programFile; // For load Operating System Code
 	programFile=fopen("OperatingSystemCode", "r");
@@ -126,18 +126,26 @@ int OperatingSystem_LongTermScheduler() {
 	
 	for (i=0; programList[i]!=NULL && i<PROGRAMSMAXNUMBER ; i++) {
 		PID=OperatingSystem_CreateProcess(i);
-		if (PID==NOFREEENTRY)
+		switch (PID) {
+		case NOFREEENTRY:
 			ComputerSystem_DebugMessage(103, ERROR, programList[i]->executableName);
-		else if (PID==PROGRAMDOESNOTEXIST)
+			break;
+		case PROGRAMDOESNOTEXIST:
 			ComputerSystem_DebugMessage(104, ERROR, programList[i]->executableName, "it does not exists");
-		else if (PID==PROGRAMNOTVALID)
+			break;
+		case PROGRAMNOTVALID:
 			ComputerSystem_DebugMessage(104, ERROR, programList[i]->executableName, "invalid priority or size");
-		else {
+			break;
+		case TOOBIGPROCESS:
+			ComputerSystem_DebugMessage(105, ERROR, programList[i]->executableName);
+			break;
+		default:
 			numberOfSuccessfullyCreatedProcesses++;
 			if (programList[i]->type==USERPROGRAM) 
 				numberOfNotTerminatedUserProcesses++;
 			// Move process to the ready state
 			OperatingSystem_MoveToTheREADYState(PID);
+			break;
 		}
 	}
 
@@ -189,8 +197,14 @@ int OperatingSystem_CreateProcess(int indexOfExecutableProgram) {
 	// Obtain enough memory space
  	loadingPhysicalAddress=OperatingSystem_ObtainMainMemory(processSize, PID);
 
+	if (loadingPhysicalAddress==TOOBIGPROCESS)
+		return TOOBIGPROCESS;
+
 	// Load program in the allocated memory
-	OperatingSystem_LoadProgram(programFile, loadingPhysicalAddress, processSize);
+	int programLoaded = OperatingSystem_LoadProgram(programFile, loadingPhysicalAddress, processSize);
+
+	if (programLoaded==TOOBIGPROCESS)
+		return TOOBIGPROCESS;
 	
 	// PCB initialization
 	OperatingSystem_PCBInitialization(PID, loadingPhysicalAddress, processSize, priority, indexOfExecutableProgram);
@@ -242,6 +256,7 @@ void OperatingSystem_MoveToTheREADYState(int PID) {
 	if (Heap_add(PID, readyToRunQueue,QUEUE_PRIORITY ,&numberOfReadyToRunProcesses ,PROCESSTABLEMAXSIZE)>=0) {
 		processTable[PID].state=READY;
 	} 
+	OperatingSystem_PrintReadyToRunQueue();
 }
 
 
@@ -391,5 +406,22 @@ void OperatingSystem_InterruptLogic(int entryPoint){
 			break;
 	}
 
+}
+
+void OperatingSystem_PrintReadyToRunQueue() {
+	int i;
+	ComputerSystem_DebugMessage(106, SHORTTERMSCHEDULE);
+	int first = 0; 
+	for (i=0; i<PROCESSTABLEMAXSIZE ; i++) {
+		if (processTable[i].state==READY) {
+			if (first==0) {
+				ComputerSystem_DebugMessage(107, SHORTTERMSCHEDULE, i, processTable[i].priority);
+				first=1;
+			}
+			else 
+				ComputerSystem_DebugMessage(108, SHORTTERMSCHEDULE, i, processTable[i].priority);
+		}
+	}
+	ComputerSystem_DebugMessage(109, SHORTTERMSCHEDULE);
 }
 
