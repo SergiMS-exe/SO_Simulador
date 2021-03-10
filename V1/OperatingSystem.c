@@ -51,6 +51,9 @@ int numberOfReadyToRunProcesses=0;
 // Variable containing the number of not terminated user processes
 int numberOfNotTerminatedUserProcesses=0;
 
+// Array that contains the processes' states
+char * statesNames [5]={"NEW","READY","EXECUTING","BLOCKED","EXIT"}; 
+
 // Initial set of tasks of the OS
 void OperatingSystem_Initialize(int daemonsIndex) {
 	int i, selectedProcess;
@@ -236,6 +239,8 @@ void OperatingSystem_PCBInitialization(int PID, int initialPhysicalAddress, int 
 	processTable[PID].state=NEW;
 	processTable[PID].priority=priority;
 	processTable[PID].programListIndex=processPLIndex;
+	//V1 Ej 10 Printing moving state message
+	ComputerSystem_DebugMessage(110, SYSPROC, PID, programList[processTable[PID].programListIndex]->executableName);
 	// Daemons run in protected mode and MMU use real address
 	if (programList[processPLIndex]->type == DAEMONPROGRAM) {
 		processTable[PID].copyOfPCRegister=initialPhysicalAddress;
@@ -254,7 +259,11 @@ void OperatingSystem_PCBInitialization(int PID, int initialPhysicalAddress, int 
 void OperatingSystem_MoveToTheREADYState(int PID) {
 	
 	if (Heap_add(PID, readyToRunQueue,QUEUE_PRIORITY ,&numberOfReadyToRunProcesses ,PROCESSTABLEMAXSIZE)>=0) {
+		// Save the previous state to print it V1 Ej10
+		int prevState = processTable[PID].state;
 		processTable[PID].state=READY;
+		//V1 Ej 10 Printing moving state message
+		ComputerSystem_DebugMessage(111, SYSPROC, PID,programList[processTable[PID].programListIndex]->executableName, statesNames[prevState], statesNames[processTable[PID].state]);
 	} 
 	OperatingSystem_PrintReadyToRunQueue();
 }
@@ -287,11 +296,16 @@ int OperatingSystem_ExtractFromReadyToRun() {
 
 // Function that assigns the processor to a process
 void OperatingSystem_Dispatch(int PID) {
-
 	// The process identified by PID becomes the current executing process
 	executingProcessID=PID;
+
+	// Save the previous state to print it V1 Ej10
+	int prevState = processTable[PID].state;
 	// Change the process' state
 	processTable[PID].state=EXECUTING;
+	//V1 Ej 10 Printing moving state message
+	ComputerSystem_DebugMessage(111, SYSPROC, PID,programList[processTable[PID].programListIndex]->executableName, statesNames[prevState], statesNames[processTable[PID].state]);
+
 	// Modify hardware registers with appropriate values for the process identified by PID
 	OperatingSystem_RestoreContext(PID);
 }
@@ -348,8 +362,12 @@ void OperatingSystem_HandleException() {
 void OperatingSystem_TerminateProcess() {
   
 	int selectedProcess;
-  	
+	
+  	// Save the previous state to print it V1 Ej10
+	int prevState = processTable[executingProcessID].state;
 	processTable[executingProcessID].state=EXIT;
+	//V1 Ej 10 Printing moving state message
+	ComputerSystem_DebugMessage(111, SYSPROC, executingProcessID,programList[processTable[executingProcessID].programListIndex]->executableName, statesNames[prevState], statesNames[processTable[executingProcessID].state]);
 	
 	if (programList[processTable[executingProcessID].programListIndex]->type==USERPROGRAM) 
 		// One more user process that has terminated
