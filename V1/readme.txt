@@ -17,3 +17,6 @@ Ejercicio 6: Se ha modificado OperatingSystem_CreateProcess para que devuelva TO
              Ademas, se ha modificado OperatingSystem_LongTermScheduler para controlar que el metodo antes mencionado devuelva TOOBIDPROCESS y muestre un mensaje de error.
              En OperatingSystem_LongTermScheduler se ha cambiado el bloque de varios if-else if-else por un bloque switch-case
 Ejercicio 7: Se ha cambiado la funcion OperatingSystem_CreateProcess para que, en la llamada a OperatingSystem_LoadProgram retorne TOOBIDPROCESS si el tamaño del programa es menor que el programa en si
+Ejercicio 8: Modificado el initialPID a PROCESSTABLEMAXSIZE-1 que es el tamaño de la tabla de procesos. Por lo que el PID de los siguientes programas empezara en 0. Pero esto no afecta a la opcion de ejecucion --initialPID
+Ejercicio 9: Creada la funcion OperatingSystem_PrintReadyToRunQueue que imprime la lista de procesos en estado LISTO. Además se le ha llamado en OperatingSystem_MoveToTheREADYState
+Ejercicio 10: Creada la estructura de datos con los nombres de los estados de los procesos (char * statesNames). Ahora se imprime un mensaje cada vez que se cambia de estado a un proceso 

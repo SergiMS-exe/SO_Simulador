@@ -1,7 +1,8 @@
 {
     "debug.inlineValues": true,
     "files.associations": {
-        "*.def": "c"
+        "*.def": "c",
+        "processor.h": "c"
     },
 
 }

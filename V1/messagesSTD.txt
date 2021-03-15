@@ -8,9 +8,11 @@
 103,@RERROR: There are not free entries in the process table for the program [%s]@@\n
 104,@RERROR: Program [%s] is not valid [--- %s ---]@@\n
 105,@RERROR: Program [%s] is too big@@\n
-106,Ready-to-run processes queue:\n
-107,\t[@G%d@@, %d]
-108,, [@G%d@@, %d]
-109,\n
+107,%s[@G%d@@,%d]%s
+108,, [@G%d@@,%d]
+109,, [@G%d@@,%d]\n
 110,New process [@G%d - %s@@] moving to the [@GNEW@@] state\n
 111,Process [@G%d - %s@@] moving from the [@G%s@@] state to the [@G%s@@] state\n
+112,Ready-to-run_processes_queues:\n
+113,USERS:%s
+114,DAEMONS:%s

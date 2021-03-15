@@ -44,15 +44,19 @@ int initialPID=PROCESSTABLEMAXSIZE-1;
 // Begin indes for daemons in programList
 int baseDaemonsInProgramList; 
 
-// Array that contains the identifiers of the READY processes
-heapItem readyToRunQueue[PROCESSTABLEMAXSIZE];
-int numberOfReadyToRunProcesses=0;
-
 // Variable containing the number of not terminated user processes
 int numberOfNotTerminatedUserProcesses=0;
 
 // Array that contains the processes' states
+// V1 Ej10
 char * statesNames [5]={"NEW","READY","EXECUTING","BLOCKED","EXIT"}; 
+
+// Data structures for multiple queuing
+// V1 Ej 11
+heapItem readyToRunQueue [NUMBEROFQUEUES][PROCESSTABLEMAXSIZE];
+int numberOfReadyToRunProcesses[NUMBEROFQUEUES]={0,0};
+char * queueNames [NUMBEROFQUEUES]={"USER","DAEMONS"};
+
 
 // Initial set of tasks of the OS
 void OperatingSystem_Initialize(int daemonsIndex) {
@@ -239,6 +243,7 @@ void OperatingSystem_PCBInitialization(int PID, int initialPhysicalAddress, int 
 	processTable[PID].state=NEW;
 	processTable[PID].priority=priority;
 	processTable[PID].programListIndex=processPLIndex;
+	processTable[PID].queueID=programList[processPLIndex]->type;
 	//V1 Ej 10 Printing moving state message
 	ComputerSystem_DebugMessage(110, SYSPROC, PID, programList[processTable[PID].programListIndex]->executableName);
 	// Daemons run in protected mode and MMU use real address
@@ -257,8 +262,8 @@ void OperatingSystem_PCBInitialization(int PID, int initialPhysicalAddress, int 
 // Move a process to the READY state: it will be inserted, depending on its priority, in
 // a queue of identifiers of READY processes
 void OperatingSystem_MoveToTheREADYState(int PID) {
-	
-	if (Heap_add(PID, readyToRunQueue,QUEUE_PRIORITY ,&numberOfReadyToRunProcesses ,PROCESSTABLEMAXSIZE)>=0) {
+	int index = processTable[PID].queueID;
+	if (Heap_add(PID, readyToRunQueue[index],QUEUE_PRIORITY ,&numberOfReadyToRunProcesses[index] ,PROCESSTABLEMAXSIZE)>=0) {
 		// Save the previous state to print it V1 Ej10
 		int prevState = processTable[PID].state;
 		processTable[PID].state=READY;
@@ -287,8 +292,9 @@ int OperatingSystem_ExtractFromReadyToRun() {
   
 	int selectedProcess=NOPROCESS;
 
-	selectedProcess=Heap_poll(readyToRunQueue,QUEUE_PRIORITY ,&numberOfReadyToRunProcesses);
-	
+	selectedProcess=Heap_poll(readyToRunQueue[USERPROCESSQUEUE],QUEUE_PRIORITY ,&numberOfReadyToRunProcesses[USERPROCESSQUEUE]);
+	if (selectedProcess==-1)
+		selectedProcess=Heap_poll(readyToRunQueue[DAEMONSQUEUE],QUEUE_PRIORITY ,&numberOfReadyToRunProcesses[DAEMONSQUEUE]);
 	// Return most priority process or NOPROCESS if empty queue
 	return selectedProcess; 
 }
@@ -427,19 +433,31 @@ void OperatingSystem_InterruptLogic(int entryPoint){
 }
 
 void OperatingSystem_PrintReadyToRunQueue() {
-	int i;
-	ComputerSystem_DebugMessage(106, SHORTTERMSCHEDULE);
-	int first = 0; 
-	for (i=0; i<PROCESSTABLEMAXSIZE ; i++) {
-		if (processTable[i].state==READY) {
-			if (first==0) {
-				ComputerSystem_DebugMessage(107, SHORTTERMSCHEDULE, i, processTable[i].priority);
-				first=1;
-			}
-			else 
-				ComputerSystem_DebugMessage(108, SHORTTERMSCHEDULE, i, processTable[i].priority);
-		}
+	int i,j,PID;
+	ComputerSystem_DebugMessage(112,SHORTTERMSCHEDULE);
+	for(i=0;i<2;i++){
+		if(i==0 && numberOfReadyToRunProcesses[i]>0) 
+			ComputerSystem_DebugMessage(113,SHORTTERMSCHEDULE,"");
+		else if(i==1 && numberOfReadyToRunProcesses[i]>0)
+			ComputerSystem_DebugMessage(114,SHORTTERMSCHEDULE,"");
+		else if(i==0)
+			ComputerSystem_DebugMessage(113,SHORTTERMSCHEDULE,"\n");
+		else
+			ComputerSystem_DebugMessage(114,SHORTTERMSCHEDULE,"\n");
+			
+		for(j=0;j<numberOfReadyToRunProcesses[i];j++){
+			
+			PID=readyToRunQueue[i][j].info;
+			if (0==numberOfReadyToRunProcesses[i]-1)
+				ComputerSystem_DebugMessage(107,SHORTTERMSCHEDULE," ",PID,processTable[PID].priority,"\n");
+			else if(j==0)
+				ComputerSystem_DebugMessage(107,SHORTTERMSCHEDULE," ",PID,processTable[PID].priority,"");
+			else if(j==numberOfReadyToRunProcesses[i]-1)
+				ComputerSystem_DebugMessage(109,SHORTTERMSCHEDULE,PID,processTable[PID].priority);
+			else
+				ComputerSystem_DebugMessage(108,SHORTTERMSCHEDULE,PID,processTable[PID].priority);
+				
+		}		
 	}
-	ComputerSystem_DebugMessage(109, SHORTTERMSCHEDULE);
 }
 
