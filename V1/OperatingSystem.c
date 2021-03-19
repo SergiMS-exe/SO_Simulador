@@ -25,6 +25,7 @@ int OperatingSystem_ExtractFromReadyToRun();
 void OperatingSystem_HandleException();
 void OperatingSystem_HandleSystemCall();
 void OperatingSystem_PrintReadyToRunQueue();
+void OperatingSystem_GiveControl();
 
 // The process table
 PCB processTable[PROCESSTABLEMAXSIZE];
@@ -415,6 +416,15 @@ void OperatingSystem_HandleSystemCall() {
 			ComputerSystem_DebugMessage(73,SYSPROC,executingProcessID,programList[processTable[executingProcessID].programListIndex]->executableName);
 			OperatingSystem_TerminateProcess();
 			break;
+
+		case SYSCALL_YIELD: ;
+			int previousPID, currentPID;
+			previousPID=executingProcessID;
+			OperatingSystem_GiveControl();
+			currentPID=executingProcessID;
+			if (previousPID!=currentPID)
+				ComputerSystem_DebugMessage(115, SHORTTERMSCHEDULE, previousPID, programList[processTable[previousPID].programListIndex]->executableName, currentPID, programList[processTable[currentPID].programListIndex]->executableName);
+			break;
 	}
 }
 	
@@ -437,11 +447,11 @@ void OperatingSystem_PrintReadyToRunQueue() {
 	ComputerSystem_DebugMessage(112,SHORTTERMSCHEDULE);
 	for(i=0;i<2;i++){
 		if(i==0 && numberOfReadyToRunProcesses[i]>0) 
-			ComputerSystem_DebugMessage(113,SHORTTERMSCHEDULE,"");
+			ComputerSystem_DebugMessage(114,SHORTTERMSCHEDULE,"");
 		else if(i==1 && numberOfReadyToRunProcesses[i]>0)
 			ComputerSystem_DebugMessage(114,SHORTTERMSCHEDULE,"");
 		else if(i==0)
-			ComputerSystem_DebugMessage(113,SHORTTERMSCHEDULE,"\n");
+			ComputerSystem_DebugMessage(114,SHORTTERMSCHEDULE,"\n");
 		else
 			ComputerSystem_DebugMessage(114,SHORTTERMSCHEDULE,"\n");
 			
@@ -461,3 +471,15 @@ void OperatingSystem_PrintReadyToRunQueue() {
 	}
 }
 
+void OperatingSystem_GiveControl() {
+	int i,j,PID;
+	for(i=0;i<2;i++){
+		for(j=0;j<numberOfReadyToRunProcesses[i];j++){
+			PID=readyToRunQueue[i][j].info;
+			if (processTable[PID].priority==processTable[executingProcessID].priority){
+				OperatingSystem_PreemptRunningProcess();
+				return;
+			}
+		}
+	}
+}

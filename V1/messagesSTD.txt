@@ -16,3 +16,4 @@
 112,Ready-to-run_processes_queues:\n
 113,USERS:%s
 114,DAEMONS:%s
+115,Process [@G%d - %s@@] will transfer the control of the processor to process [@G%d - %s@@]\n

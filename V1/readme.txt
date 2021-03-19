@@ -20,3 +20,10 @@ Ejercicio 7: Se ha cambiado la funcion OperatingSystem_CreateProcess para que, e
 Ejercicio 8: Modificado el initialPID a PROCESSTABLEMAXSIZE-1 que es el tamaño de la tabla de procesos. Por lo que el PID de los siguientes programas empezara en 0. Pero esto no afecta a la opcion de ejecucion --initialPID
 Ejercicio 9: Creada la funcion OperatingSystem_PrintReadyToRunQueue que imprime la lista de procesos en estado LISTO. Además se le ha llamado en OperatingSystem_MoveToTheREADYState
 Ejercicio 10: Creada la estructura de datos con los nombres de los estados de los procesos (char * statesNames). Ahora se imprime un mensaje cada vez que se cambia de estado a un proceso 
+Ejercicio 11: Modificados todos los metodos necewsarios y funciona bien, pero error en la impresion de la cola de programas de usuario
+Ejercicio 12: Creada la funcion OperatingSystem_GiveControl para dar control al siguiente proceso que tenga su la misma prioridad. Añadido en el enum corresponiente SYSCALL_YIELD y su case para el tratamiento de la llamada, la cual se ejecuta con la orden TRAP 4 
+Ejercicio 13:
+    a. Se deben guardar los estados de esos registros para que, después de una interrupción, el proceso vuela al estado en el que estaba.
+    b. También se deberia guardar el registro de acumulador
+    c. Habría que añadir el guardado del registro acumulador en la función
+    d. Afectaria al PCB
