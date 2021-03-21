@@ -457,11 +457,11 @@ void OperatingSystem_PrintReadyToRunQueue() {
 		for (j=0; j<numberOfReadyToRunProcesses[i]; j++){
 			PID = readyToRunQueue[i][j].info;
 			ComputerSystem_DebugMessage(114, SHORTTERMSCHEDULE, PID, processTable[PID].priority);
-			if (j==numberOfReadyToRunProcesses[i]-1)
-				ComputerSystem_DebugMessage(108, SHORTTERMSCHEDULE);
-			else
+			if (j!=numberOfReadyToRunProcesses[i]-1)
 				ComputerSystem_DebugMessage(107, SHORTTERMSCHEDULE);
+				
 		}
+		ComputerSystem_DebugMessage(108, SHORTTERMSCHEDULE);
 	}
 }
 
