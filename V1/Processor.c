@@ -182,26 +182,37 @@ void Processor_DecodeAndExecuteInstruction() {
 
 		// Instruction HALT
 		case HALT_INST: 
-			Processor_ActivatePSW_Bit(POWEROFF_BIT);
+			if (Processor_PSW_BitState(EXECUTION_MODE_BIT)) // Protected mode V1 Ej16
+				Processor_ActivatePSW_Bit(POWEROFF_BIT);
+			else 
+				Processor_RaiseInterrupt(EXCEPTION_BIT); //Raise an exception V1 Ej16
 			break;
 			  
 		// Instruction OS
 		case OS_INST: // Make a operating system routine in entry point indicated by operand1
-			// Show final part of HARDWARE message with CPU registers
-			// Show message: " (PC: registerPC_CPU, Accumulator: registerAccumulator_CPU, PSW: registerPSW_CPU [Processor_ShowPSW()]\n
-			ComputerSystem_DebugMessage(69, HARDWARE,InstructionNames[operationCode],operand1,operand2,registerPC_CPU,registerAccumulator_CPU,registerPSW_CPU,Processor_ShowPSW());
-			// Not all operating system code is executed in simulated processor, but really must do it... 
-			OperatingSystem_InterruptLogic(operand1);
-			registerPC_CPU++;
-			// Update PSW bits (ZERO_BIT, NEGATIVE_BIT, ...)
-			Processor_UpdatePSW();
+			if (Processor_PSW_BitState(EXECUTION_MODE_BIT)){ // Protected mode V1 Ej16
+				// Show final part of HARDWARE message with CPU registers
+				// Show message: " (PC: registerPC_CPU, Accumulator: registerAccumulator_CPU, PSW: registerPSW_CPU [Processor_ShowPSW()]\n
+				ComputerSystem_DebugMessage(69, HARDWARE,InstructionNames[operationCode],operand1,operand2,registerPC_CPU,registerAccumulator_CPU,registerPSW_CPU,Processor_ShowPSW());
+				// Not all operating system code is executed in simulated processor, but really must do it... 
+				OperatingSystem_InterruptLogic(operand1);
+				registerPC_CPU++;
+				// Update PSW bits (ZERO_BIT, NEGATIVE_BIT, ...)
+				Processor_UpdatePSW();
+			}
+			else 
+				Processor_RaiseInterrupt(EXCEPTION_BIT); //Raise an exception V1 Ej16
 			return; // Note: message show before... for operating system messages after...
 
 		// Instruction IRET
 		case IRET_INST: // Return from a interrupt handle manager call
-			registerPC_CPU=Processor_CopyFromSystemStack(MAINMEMORYSIZE-1);
-			registerPSW_CPU=Processor_CopyFromSystemStack(MAINMEMORYSIZE-2);
-			break;		
+			if (Processor_PSW_BitState(EXECUTION_MODE_BIT)){ // Protected mode V1 Ej16
+				registerPC_CPU=Processor_CopyFromSystemStack(MAINMEMORYSIZE-1);
+				registerPSW_CPU=Processor_CopyFromSystemStack(MAINMEMORYSIZE-2);
+			}
+			else 
+				Processor_RaiseInterrupt(EXCEPTION_BIT); //Raise an exception V1 Ej16
+			break;
 
 		// Instruction MEMADD
 		case MEMADD_INST:

@@ -5,6 +5,7 @@
 #include "Buses.h"
 #include "Heap.h"
 #include <string.h>
+#include <stdbool.h>
 #include <ctype.h>
 #include <stdlib.h>
 #include <time.h>
@@ -87,7 +88,13 @@ void OperatingSystem_Initialize(int daemonsIndex) {
 	OperatingSystem_PrepareDaemons(daemonsIndex);
 	
 	// Create all user processes from the information given in the command line
-	OperatingSystem_LongTermScheduler();
+	int createdProcesses = OperatingSystem_LongTermScheduler();
+	//V1 Ej 15
+	if (createdProcesses==0){
+		OperatingSystem_ReadyToShutdown();
+		return; 
+	}
+
 		
 	if (strcmp(programList[processTable[sipID].programListIndex]->executableName,"SystemIdleProcess")) {
 		// Show red message "FATAL ERROR: Missing SIP program!\n"
@@ -156,7 +163,9 @@ int OperatingSystem_LongTermScheduler() {
 			break;
 		}
 	}
-
+	if (numberOfSuccessfullyCreatedProcesses==0)
+		return 0;
+	
 	if (numberOfNotTerminatedUserProcesses==0) {
 		if (executingProcessID==sipID) {
 			// finishing sipID, change PC to address of OS HALT instruction
@@ -270,8 +279,9 @@ void OperatingSystem_MoveToTheREADYState(int PID) {
 		processTable[PID].state=READY;
 		//V1 Ej 10 Printing moving state message
 		ComputerSystem_DebugMessage(111, SYSPROC, PID,programList[processTable[PID].programListIndex]->executableName, statesNames[prevState], statesNames[processTable[PID].state]);
+		OperatingSystem_PrintReadyToRunQueue();
 	} 
-	OperatingSystem_PrintReadyToRunQueue();
+	
 }
 
 
@@ -417,13 +427,9 @@ void OperatingSystem_HandleSystemCall() {
 			OperatingSystem_TerminateProcess();
 			break;
 
+		//V1 Ej 12
 		case SYSCALL_YIELD: ;
-			int previousPID, currentPID;
-			previousPID=executingProcessID;
 			OperatingSystem_GiveControl();
-			currentPID=executingProcessID;
-			if (previousPID!=currentPID)
-				ComputerSystem_DebugMessage(115, SHORTTERMSCHEDULE, previousPID, programList[processTable[previousPID].programListIndex]->executableName, currentPID, programList[processTable[currentPID].programListIndex]->executableName);
 			break;
 	}
 }
@@ -442,44 +448,45 @@ void OperatingSystem_InterruptLogic(int entryPoint){
 
 }
 
+//EDITTTTTTTTTTTTT
 void OperatingSystem_PrintReadyToRunQueue() {
-	int i,j,PID;
-	ComputerSystem_DebugMessage(112,SHORTTERMSCHEDULE);
-	for(i=0;i<2;i++){
-		if(i==0 && numberOfReadyToRunProcesses[i]>0) 
-			ComputerSystem_DebugMessage(114,SHORTTERMSCHEDULE,"");
-		else if(i==1 && numberOfReadyToRunProcesses[i]>0)
-			ComputerSystem_DebugMessage(114,SHORTTERMSCHEDULE,"");
-		else if(i==0)
-			ComputerSystem_DebugMessage(114,SHORTTERMSCHEDULE,"\n");
-		else
-			ComputerSystem_DebugMessage(114,SHORTTERMSCHEDULE,"\n");
-			
-		for(j=0;j<numberOfReadyToRunProcesses[i];j++){
-			
-			PID=readyToRunQueue[i][j].info;
-			if (0==numberOfReadyToRunProcesses[i]-1)
-				ComputerSystem_DebugMessage(107,SHORTTERMSCHEDULE," ",PID,processTable[PID].priority,"\n");
-			else if(j==0)
-				ComputerSystem_DebugMessage(107,SHORTTERMSCHEDULE," ",PID,processTable[PID].priority,"");
-			else if(j==numberOfReadyToRunProcesses[i]-1)
-				ComputerSystem_DebugMessage(109,SHORTTERMSCHEDULE,PID,processTable[PID].priority);
-			else
-				ComputerSystem_DebugMessage(108,SHORTTERMSCHEDULE,PID,processTable[PID].priority);
-				
-		}		
+	int queue;     
+	ComputerSystem_DebugMessage(112,SHORTTERMSCHEDULE);         
+	for(queue=0; queue<NUMBEROFQUEUES ; queue++){         
+		//Nombre de la queue         
+		ComputerSystem_DebugMessage(113,SHORTTERMSCHEDULE,queueNames[queue]);         
+		int i;         
+		for(i=0; i<numberOfReadyToRunProcesses[queue]-1 ; i++){             
+			//Los valores             
+			ComputerSystem_DebugMessage(107,SHORTTERMSCHEDULE,readyToRunQueue[queue][i].info, processTable[readyToRunQueue[queue][i].info].priority);         
+		}         
+		if(numberOfReadyToRunProcesses[queue] !=0)             
+		ComputerSystem_DebugMessage(108,SHORTTERMSCHEDULE,readyToRunQueue[queue][i].info,processTable[readyToRunQueue[queue][i].info].priority);         
+
+		ComputerSystem_DebugMessage(109,SHORTTERMSCHEDULE);             
 	}
 }
 
+//V1 Ej 12
 void OperatingSystem_GiveControl() {
-	int i,j,PID;
-	for(i=0;i<2;i++){
-		for(j=0;j<numberOfReadyToRunProcesses[i];j++){
-			PID=readyToRunQueue[i][j].info;
-			if (processTable[PID].priority==processTable[executingProcessID].priority){
-				OperatingSystem_PreemptRunningProcess();
-				return;
+	int previousPID, currentPID, i, j;
+	bool found;
+	previousPID=executingProcessID;
+	for (i=0; i<NUMBEROFQUEUES; i++) {
+		for (j=0; j<numberOfReadyToRunProcesses[i]; j++){
+			if (processTable[previousPID].priority==processTable[readyToRunQueue[i][j].info].priority) {
+				currentPID=readyToRunQueue[i][j].info;
+				found=true;
+				break;
 			}
 		}
+		if (found)
+			break;
+	}
+	
+	if (previousPID!=currentPID){
+		ComputerSystem_DebugMessage(115, SHORTTERMSCHEDULE, previousPID, programList[processTable[previousPID].programListIndex]->executableName, currentPID, programList[processTable[currentPID].programListIndex]->executableName);
+		OperatingSystem_PreemptRunningProcess();
+		OperatingSystem_Dispatch(currentPID);
 	}
 }

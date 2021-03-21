@@ -27,3 +27,8 @@ Ejercicio 13:
     b. También se deberia guardar el registro de acumulador
     c. Habría que añadir el guardado del registro acumulador en la función
     d. Afectaria al PCB
+Ejercicio 14: Cuando el programa que se esta ejecutando es ultimo y ademas es el SystemIdleProcess, ejecuta la funcion OperatingSystem_TerminatingSIP y hace un return para terminar la funcion
+Ejercicio 15: Si el numero de procesos creados en el PLP es 0, se recoge en el initialize y se llama a la funcion OperatingSystem_ReadyToShutdown para terminar la simulacions
+Ejercicio 16: Hace lo que hace porque no estamos en modo protegido y no deberiamos tener permisos para ejecutar esas instrucciones
+    a. Se han añadido condicionales a los case de OS, IRET y HALT de Processor_DecodeAndExecuteInstruction para que si el bit de ejecucion no esta en modo privilegiado, lance una excepcion
+    b. Se activa el modo protegido cuando se ejecuta un daemon o se lanza una excepcion
