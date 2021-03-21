@@ -462,7 +462,6 @@ void OperatingSystem_PrintReadyToRunQueue() {
 			else
 				ComputerSystem_DebugMessage(107, SHORTTERMSCHEDULE);
 		}
-		ComputerSystem_DebugMessage(108, SHORTTERMSCHEDULE);
 	}
 }
 
