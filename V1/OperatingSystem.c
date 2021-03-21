@@ -448,22 +448,21 @@ void OperatingSystem_InterruptLogic(int entryPoint){
 
 }
 
-//EDITTTTTTTTTTTTT
+//v1 Ej11
 void OperatingSystem_PrintReadyToRunQueue() {
-	int queue;     
-	ComputerSystem_DebugMessage(112,SHORTTERMSCHEDULE);         
-	for(queue=0; queue<NUMBEROFQUEUES ; queue++){         
-		//Nombre de la queue         
-		ComputerSystem_DebugMessage(113,SHORTTERMSCHEDULE,queueNames[queue]);         
-		int i;         
-		for(i=0; i<numberOfReadyToRunProcesses[queue]-1 ; i++){             
-			//Los valores             
-			ComputerSystem_DebugMessage(107,SHORTTERMSCHEDULE,readyToRunQueue[queue][i].info, processTable[readyToRunQueue[queue][i].info].priority);         
-		}         
-		if(numberOfReadyToRunProcesses[queue] !=0)             
-		ComputerSystem_DebugMessage(108,SHORTTERMSCHEDULE,readyToRunQueue[queue][i].info,processTable[readyToRunQueue[queue][i].info].priority);         
-
-		ComputerSystem_DebugMessage(109,SHORTTERMSCHEDULE);             
+	int i,j,PID;
+	ComputerSystem_DebugMessage(112,SHORTTERMSCHEDULE);
+	for (i=0; i<NUMBEROFQUEUES; i++){
+		ComputerSystem_DebugMessage(113, SHORTTERMSCHEDULE, queueNames[i]);
+		for (j=0; j<numberOfReadyToRunProcesses[i]; j++){
+			PID = readyToRunQueue[i][j].info;
+			ComputerSystem_DebugMessage(114, SHORTTERMSCHEDULE, PID, processTable[PID].priority);
+			if (j==numberOfReadyToRunProcesses[i]-1)
+				ComputerSystem_DebugMessage(108, SHORTTERMSCHEDULE);
+			else
+				ComputerSystem_DebugMessage(107, SHORTTERMSCHEDULE);
+		}
+		ComputerSystem_DebugMessage(108, SHORTTERMSCHEDULE);
 	}
 }
 
