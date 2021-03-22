@@ -486,25 +486,17 @@ void OperatingSystem_PrintReadyToRunQueue() {
 
 //V1 Ej 12
 void OperatingSystem_GiveControl() {
-	int previousPID, currentPID, i, j;
-	bool found;
+	int i,j,previousPID, currentPID;
 	previousPID=executingProcessID;
-	for (i=0; i<NUMBEROFQUEUES; i++) {
-		for (j=0; j<numberOfReadyToRunProcesses[i]; j++){
-			if (processTable[previousPID].priority==processTable[readyToRunQueue[i][j].info].priority) {
-				currentPID=readyToRunQueue[i][j].info;
-				found=true;
-				break;
-			}
+	i=processTable[executingProcessID].queueID;
+	for (j=0; j<numberOfReadyToRunProcesses[i]; j++){
+		if (processTable[previousPID].priority==processTable[readyToRunQueue[i][j].info].priority && previousPID!=readyToRunQueue[i][j].info) {
+			currentPID = OperatingSystem_ShortTermScheduler();
+			OperatingSystem_PreemptRunningProcess();
+			OperatingSystem_Dispatch(currentPID);
+			ComputerSystem_DebugMessage(115, SHORTTERMSCHEDULE, previousPID, programList[processTable[previousPID].programListIndex]->executableName, 
+				currentPID, programList[processTable[currentPID].programListIndex]->executableName);
+			return;
 		}
-		if (found)
-			break;
-	}
-	
-	if (previousPID!=currentPID){
-		OperatingSystem_ShowTime(SHORTTERMSCHEDULE);
-		ComputerSystem_DebugMessage(115, SHORTTERMSCHEDULE, previousPID, programList[processTable[previousPID].programListIndex]->executableName, currentPID, programList[processTable[currentPID].programListIndex]->executableName);
-		OperatingSystem_PreemptRunningProcess();
-		OperatingSystem_Dispatch(currentPID);
 	}
 }
