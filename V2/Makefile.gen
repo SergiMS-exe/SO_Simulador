@@ -1,0 +1,37 @@
+#
+# Makefile for the Linux Simulator
+#
+########################################################
+
+PROGRAM = 	Simulator
+
+# Compilation Details
+SHELL = /bin/sh
+CC = cc
+CFLAGS = -g -c -Wall -O0
+INCLUDES =
+LIBRERIAS =
+WRAP = -Wl,-wrap,OperatingSystem_InterruptLogic,-wrap,Processor_FetchInstruction,-wrap,Processor_InstructionCycleLoop,-wrap,Processor_DecodeAndExecuteInstruction
+
+SOURCES = $(wildcard *.c)
+OBJECTS = $(SOURCES:.c=.o)
+DEPS = $(SOURCES:.c=.d)
+
+${PROGRAM}: $(OBJECTS)
+	$(CC) -o ${PROGRAM} $(OBJECTS) $(LIBRERIAS) $(WRAP)
+
+$(OBJECTS): $(SOURCES)
+
+# automatically generate dependency rules
+%.d : %.c
+# -MF  write the generated dependency rule to a file
+# -MG  assume missing headers will be generated and don't stop with an error
+# -MM  generate dependency rule for prerequisite, skipping system headers
+# -MP  add phony target for each header to prevent errors when header is missing
+# -MT  add a target to the generated dependency
+	$(CC) -MF "$@" -MG -MM -MP -MT "$@" -MT "$(<:.c=.o)" "$<"
+
+-include $(DEPS)
+
+clean:
+	rm -f $(PROGRAM) *.o *~ *.d core
