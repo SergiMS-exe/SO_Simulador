@@ -27,6 +27,7 @@ void OperatingSystem_HandleException();
 void OperatingSystem_HandleSystemCall();
 void OperatingSystem_PrintReadyToRunQueue();
 void OperatingSystem_GiveControl();
+void OperatingSystem_HandleClockInterrupt();
 
 // The process table
 PCB processTable[PROCESSTABLEMAXSIZE];
@@ -462,6 +463,9 @@ void OperatingSystem_InterruptLogic(int entryPoint){
 		case EXCEPTION_BIT: // EXCEPTION_BIT=6
 			OperatingSystem_HandleException();
 			break;
+		case CLOCKINT_BIT: // CLOCKINT_BIT=9 v2 Ej 2-B
+			OperatingSystem_HandleClockInterrupt();
+			break;
 	}
 
 }
@@ -486,17 +490,21 @@ void OperatingSystem_PrintReadyToRunQueue() {
 
 //V1 Ej 12
 void OperatingSystem_GiveControl() {
-	int i,j,previousPID, currentPID;
+	int i,previousPID, currentPID;
 	previousPID=executingProcessID;
 	i=processTable[executingProcessID].queueID;
-	for (j=0; j<numberOfReadyToRunProcesses[i]; j++){
-		if (processTable[previousPID].priority==processTable[readyToRunQueue[i][j].info].priority && previousPID!=readyToRunQueue[i][j].info) {
-			currentPID = OperatingSystem_ShortTermScheduler();
-			OperatingSystem_PreemptRunningProcess();
-			OperatingSystem_Dispatch(currentPID);
-			ComputerSystem_DebugMessage(115, SHORTTERMSCHEDULE, previousPID, programList[processTable[previousPID].programListIndex]->executableName, 
-				currentPID, programList[processTable[currentPID].programListIndex]->executableName);
-			return;
-		}
+	if (processTable[previousPID].priority==processTable[readyToRunQueue[i][0].info].priority && previousPID!=readyToRunQueue[i][0].info 
+		&& &numberOfReadyToRunProcesses[USERPROGRAM]>0) {
+		currentPID = OperatingSystem_ShortTermScheduler();
+		ComputerSystem_DebugMessage(115, SHORTTERMSCHEDULE, previousPID, programList[processTable[previousPID].programListIndex]->executableName, 
+			currentPID, programList[processTable[currentPID].programListIndex]->executableName);
+		OperatingSystem_PreemptRunningProcess();
+		OperatingSystem_Dispatch(currentPID);
+		return;
 	}
+}
+
+// Exercise 2-b of V2
+void OperatingSystem_HandleClockInterrupt() {
+	return;
 }
