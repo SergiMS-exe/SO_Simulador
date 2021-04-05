@@ -28,6 +28,7 @@ void OperatingSystem_HandleSystemCall();
 void OperatingSystem_PrintReadyToRunQueue();
 void OperatingSystem_GiveControl();
 void OperatingSystem_HandleClockInterrupt();
+void OperatingSystem_MoveToTheBLOCKEDState();
 
 // The process table
 PCB processTable[PROCESSTABLEMAXSIZE];
@@ -37,6 +38,9 @@ int OS_address_base = PROCESSTABLEMAXSIZE * MAINMEMORYSECTIONSIZE;
 
 // Identifier of the current executing process
 int executingProcessID=NOPROCESS;
+
+// Variable containing the number of interruption clocks (V2 Ej 4)
+int numberOfClockInterrupts = 0; 
 
 // Identifier of the System Idle Process
 int sipID;
@@ -60,6 +64,10 @@ heapItem readyToRunQueue [NUMBEROFQUEUES][PROCESSTABLEMAXSIZE];
 int numberOfReadyToRunProcesses[NUMBEROFQUEUES]={0,0};
 char * queueNames [NUMBEROFQUEUES]={"USER","DAEMONS"};
 
+// Exercise 5-b of V2 
+// Heap with blocked processes sort by when to wakeup 
+heapItem sleepingProcessesQueue[PROCESSTABLEMAXSIZE]; 
+int numberOfSleepingProcesses=0;
 
 // Initial set of tasks of the OS
 void OperatingSystem_Initialize(int daemonsIndex) {
@@ -447,8 +455,13 @@ void OperatingSystem_HandleSystemCall() {
 			break;
 
 		//V1 Ej 12
-		case SYSCALL_YIELD: ;
+		case SYSCALL_YIELD: 
 			OperatingSystem_GiveControl();
+			break;
+		
+		//V2 Ej 5
+		case SYSCALL_SLEEP:
+			OperatingSystem_MoveToTheBLOCKEDState();
 			break;
 	}
 }
@@ -506,5 +519,21 @@ void OperatingSystem_GiveControl() {
 
 // Exercise 2-b of V2
 void OperatingSystem_HandleClockInterrupt() {
+	numberOfClockInterrupts++;
+
+	//V2 Ej4
+	OperatingSystem_ShowTime(INTERRUPT); 
+	ComputerSystem_DebugMessage(120,INTERRUPT,numberOfClockInterrupts);
+
 	return;
+}
+
+// V2 Ej5
+void OperatingSystem_MoveToTheBLOCKEDState() {
+	processTable[executingProcessID].whenToWakeUp=abs(processTable[executingProcessID].copyOfAccumulator) + numberOfClockInterrupts + 1;
+	if (Heap_add(executingProcessID, sleepingProcessesQueue, QUEUE_WAKEUP, numberOfSleepingProcesses, PROCESSTABLEMAXSIZE)>=0){
+		processTable[executingProcessID].state=BLOCKED;
+		OperatingSystem_SaveContext(PID);
+		OperatingSystem_PrintStatus();
+	}
 }

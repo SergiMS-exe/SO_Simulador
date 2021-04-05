@@ -19,6 +19,9 @@
 
 #define NOPROCESS -1
 
+// V2 Ej 5c
+#define SLEEPINGQUEUE
+
 // Contains the possible type of programs
 enum ProgramTypes { USERPROGRAM, DAEMONPROGRAM }; 
 
@@ -46,6 +49,7 @@ typedef struct {
 	unsigned int copyOfPSWRegister;
 	int programListIndex;
 	int queueID;
+	int whenToWakeUp;  // Exercise 5-a of V2
 } PCB;
 
 // These "extern" declaration enables other source code files to gain access

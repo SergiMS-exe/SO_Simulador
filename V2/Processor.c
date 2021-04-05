@@ -250,8 +250,9 @@ void Processor_DecodeAndExecuteInstruction() {
 	
 // Hardware interrupt processing
 void Processor_ManageInterrupts() {
-  
-	int i;
+	
+	if(!Processor_PSW_BitState(INTERRUPT_MASKED_BIT)){
+		int i;
 
 		for (i=0;i<INTERRUPTTYPES;i++)
 			// If an 'i'-type interrupt is pending
@@ -260,7 +261,8 @@ void Processor_ManageInterrupts() {
 				Processor_ACKInterrupt(i);
 				// Copy PC and PSW registers in the system stack
 				Processor_CopyInSystemStack(MAINMEMORYSIZE-1, registerPC_CPU);
-				Processor_CopyInSystemStack(MAINMEMORYSIZE-2, registerPSW_CPU);	
+				Processor_CopyInSystemStack(MAINMEMORYSIZE-2, registerPSW_CPU);    
+				Processor_CopyInSystemStack(MAINMEMORYSIZE-3, registerAccumulator_CPU);    
 				// Activate protected excution mode
 				Processor_ActivatePSW_Bit(EXECUTION_MODE_BIT);
 				Processor_ActivatePSW_Bit(INTERRUPT_MASKED_BIT); //V2 Ej 3
@@ -268,6 +270,7 @@ void Processor_ManageInterrupts() {
 				registerPC_CPU=interruptVectorTable[i];
 				break; // Don't process another interrupt
 			}
+	}
 }
 
 char * Processor_ShowPSW(){
