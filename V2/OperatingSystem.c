@@ -26,7 +26,7 @@ int OperatingSystem_ExtractFromReadyToRun();
 void OperatingSystem_HandleException();
 void OperatingSystem_HandleSystemCall();
 void OperatingSystem_PrintReadyToRunQueue();
-void OperatingSystem_GiveControl();
+int OperatingSystem_GiveControl();
 void OperatingSystem_HandleClockInterrupt();
 void OperatingSystem_MoveToTheBLOCKEDState();
 
@@ -192,6 +192,9 @@ int OperatingSystem_LongTermScheduler() {
 		OperatingSystem_ReadyToShutdown();
 	}
 
+	//V2 Ej 7d
+	OperatingSystem_PrintStatus();
+
 	// Return the number of succesfully created processes
 	return numberOfSuccessfullyCreatedProcesses;
 }
@@ -300,7 +303,7 @@ void OperatingSystem_MoveToTheREADYState(int PID) {
 		OperatingSystem_ShowTime(SYSPROC);
 		//V1 Ej 10 Printing moving state message
 		ComputerSystem_DebugMessage(111, SYSPROC, PID,programList[processTable[PID].programListIndex]->executableName, statesNames[prevState], statesNames[processTable[PID].state]);
-		OperatingSystem_PrintReadyToRunQueue();
+		//OperatingSystem_PrintReadyToRunQueue();
 	} 
 	
 }
@@ -314,7 +317,7 @@ int OperatingSystem_ShortTermScheduler() {
 	int selectedProcess;
 
 	selectedProcess=OperatingSystem_ExtractFromReadyToRun();
-	
+
 	return selectedProcess;
 }
 
@@ -331,6 +334,11 @@ int OperatingSystem_ExtractFromReadyToRun() {
 	return selectedProcess; 
 }
 
+void OperatingSystem_ExtractFromSleepingQueue() {
+	int selected = Heap_poll(sleepingProcessesQueue,QUEUE_WAKEUP ,&numberOfSleepingProcesses);
+	if (selected!=-1)
+		OperatingSystem_MoveToTheREADYState(selected);
+}
 
 // Function that assigns the processor to a process
 void OperatingSystem_Dispatch(int PID) {
@@ -395,6 +403,9 @@ void OperatingSystem_HandleException() {
 	ComputerSystem_DebugMessage(71,SYSPROC,executingProcessID,programList[processTable[executingProcessID].programListIndex]->executableName);
 	
 	OperatingSystem_TerminateProcess();
+
+	//V2 Ej 7c
+	OperatingSystem_PrintStatus();
 }
 
 
@@ -437,6 +448,7 @@ void OperatingSystem_HandleSystemCall() {
   
 	int systemCallID;
 
+	int changed;
 	// Register A contains the identifier of the issued system call
 	systemCallID=Processor_GetRegisterA();
 	
@@ -452,11 +464,16 @@ void OperatingSystem_HandleSystemCall() {
 			// Show message: "Process [executingProcessID] has requested to terminate\n"
 			ComputerSystem_DebugMessage(73,SYSPROC,executingProcessID,programList[processTable[executingProcessID].programListIndex]->executableName);
 			OperatingSystem_TerminateProcess();
+			//V2 Ej 7b
+			OperatingSystem_PrintStatus();
 			break;
 
 		//V1 Ej 12
 		case SYSCALL_YIELD: 
-			OperatingSystem_GiveControl();
+			changed = OperatingSystem_GiveControl();
+			// v2 Ej 7a
+			if (changed == 1)
+				OperatingSystem_PrintStatus();
 			break;
 		
 		//V2 Ej 5
@@ -502,7 +519,7 @@ void OperatingSystem_PrintReadyToRunQueue() {
 }
 
 //V1 Ej 12
-void OperatingSystem_GiveControl() {
+int OperatingSystem_GiveControl() {
 	int i,previousPID, currentPID;
 	previousPID=executingProcessID;
 	i=processTable[executingProcessID].queueID;
@@ -513,14 +530,41 @@ void OperatingSystem_GiveControl() {
 			currentPID, programList[processTable[currentPID].programListIndex]->executableName);
 		OperatingSystem_PreemptRunningProcess();
 		OperatingSystem_Dispatch(currentPID);
-		return;
+		return 1;
 	}
+	return 0;
 }
 
 // Exercise 2-b of V2
 void OperatingSystem_HandleClockInterrupt() {
 	numberOfClockInterrupts++;
-
+	// V2 Ej 6a
+	int i, counter=0, pid;
+	for (i=0; i<numberOfSleepingProcesses; i++){
+		pid=sleepingProcessesQueue[i].info;
+		if (processTable[pid].whenToWakeUp==numberOfClockInterrupts) {
+			OperatingSystem_ExtractFromSleepingQueue();
+			i--;
+			counter++;
+		}
+	}
+	//V2 Ej 6b
+	if (counter>0) {
+		OperatingSystem_PrintStatus();
+		//V2 Ej 6c
+		int mostPriority = Heap_getFirst(readyToRunQueue[USERPROCESSQUEUE],numberOfReadyToRunProcesses[USERPROCESSQUEUE]);
+		if (processTable[executingProcessID].queueID!=DAEMONPROGRAM && processTable[executingProcessID].priority<processTable[mostPriority].priority){
+			pid = OperatingSystem_ShortTermScheduler();
+			OperatingSystem_ShowTime(SHORTTERMSCHEDULE);
+			ComputerSystem_DebugMessage(121,SHORTTERMSCHEDULE,executingProcessID,programList[processTable[executingProcessID].programListIndex]->executableName,pid,
+							programList[processTable[pid].programListIndex]->executableName);
+			OperatingSystem_PreemptRunningProcess();
+			OperatingSystem_Dispatch(pid);
+			//V2 Ej 6d
+			OperatingSystem_PrintStatus();
+		}
+		
+	}
 	//V2 Ej4
 	OperatingSystem_ShowTime(INTERRUPT); 
 	ComputerSystem_DebugMessage(120,INTERRUPT,numberOfClockInterrupts);
@@ -530,10 +574,10 @@ void OperatingSystem_HandleClockInterrupt() {
 
 // V2 Ej5
 void OperatingSystem_MoveToTheBLOCKEDState() {
-	processTable[executingProcessID].whenToWakeUp=abs(processTable[executingProcessID].copyOfAccumulator) + numberOfClockInterrupts + 1;
-	if (Heap_add(executingProcessID, sleepingProcessesQueue, QUEUE_WAKEUP, numberOfSleepingProcesses, PROCESSTABLEMAXSIZE)>=0){
+	processTable[executingProcessID].whenToWakeUp=abs(processTable[executingProcessID].copyOfAccumulatorRegister) + numberOfClockInterrupts + 1;
+	if (Heap_add(executingProcessID, sleepingProcessesQueue, QUEUE_WAKEUP, &numberOfSleepingProcesses, PROCESSTABLEMAXSIZE)>=0){
 		processTable[executingProcessID].state=BLOCKED;
-		OperatingSystem_SaveContext(PID);
+		OperatingSystem_SaveContext(executingProcessID);
 		OperatingSystem_PrintStatus();
 	}
 }
