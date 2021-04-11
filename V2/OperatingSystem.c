@@ -446,9 +446,9 @@ void OperatingSystem_TerminateProcess() {
 // System call management routine
 void OperatingSystem_HandleSystemCall() {
   
-	int systemCallID;
+	int systemCallID, changed, prevPID, currentPID;
 
-	int changed;
+	
 	// Register A contains the identifier of the issued system call
 	systemCallID=Processor_GetRegisterA();
 	
@@ -478,7 +478,11 @@ void OperatingSystem_HandleSystemCall() {
 		
 		//V2 Ej 5
 		case SYSCALL_SLEEP:
-			OperatingSystem_MoveToTheBLOCKEDState();
+			prevPID=executingProcessID;
+			currentPID=OperatingSystem_ShortTermScheduler();
+			OperatingSystem_MoveToTheBLOCKEDState(prevPID);
+			OperatingSystem_Dispatch(currentPID);
+			OperatingSystem_PrintStatus();
 			break;
 	}
 }
@@ -526,6 +530,7 @@ int OperatingSystem_GiveControl() {
 	if (processTable[previousPID].priority==processTable[readyToRunQueue[i][0].info].priority && previousPID!=readyToRunQueue[i][0].info 
 		&& &numberOfReadyToRunProcesses[USERPROGRAM]>0) {
 		currentPID = OperatingSystem_ShortTermScheduler();
+		OperatingSystem_ShowTime(SHORTTERMSCHEDULE);
 		ComputerSystem_DebugMessage(115, SHORTTERMSCHEDULE, previousPID, programList[processTable[previousPID].programListIndex]->executableName, 
 			currentPID, programList[processTable[currentPID].programListIndex]->executableName);
 		OperatingSystem_PreemptRunningProcess();
@@ -538,6 +543,9 @@ int OperatingSystem_GiveControl() {
 // Exercise 2-b of V2
 void OperatingSystem_HandleClockInterrupt() {
 	numberOfClockInterrupts++;
+	//V2 Ej4
+	OperatingSystem_ShowTime(INTERRUPT); 
+	ComputerSystem_DebugMessage(120,INTERRUPT,numberOfClockInterrupts);
 	// V2 Ej 6a
 	int i, counter=0, pid;
 	for (i=0; i<numberOfSleepingProcesses; i++){
@@ -553,7 +561,7 @@ void OperatingSystem_HandleClockInterrupt() {
 		OperatingSystem_PrintStatus();
 		//V2 Ej 6c
 		int mostPriority = Heap_getFirst(readyToRunQueue[USERPROCESSQUEUE],numberOfReadyToRunProcesses[USERPROCESSQUEUE]);
-		if (processTable[executingProcessID].queueID!=DAEMONPROGRAM && processTable[executingProcessID].priority<processTable[mostPriority].priority){
+		if (processTable[executingProcessID].queueID==DAEMONPROGRAM || processTable[executingProcessID].priority>processTable[mostPriority].priority){
 			pid = OperatingSystem_ShortTermScheduler();
 			OperatingSystem_ShowTime(SHORTTERMSCHEDULE);
 			ComputerSystem_DebugMessage(121,SHORTTERMSCHEDULE,executingProcessID,programList[processTable[executingProcessID].programListIndex]->executableName,pid,
@@ -565,19 +573,21 @@ void OperatingSystem_HandleClockInterrupt() {
 		}
 		
 	}
-	//V2 Ej4
-	OperatingSystem_ShowTime(INTERRUPT); 
-	ComputerSystem_DebugMessage(120,INTERRUPT,numberOfClockInterrupts);
-
-	return;
 }
 
 // V2 Ej5
-void OperatingSystem_MoveToTheBLOCKEDState() {
-	processTable[executingProcessID].whenToWakeUp=abs(processTable[executingProcessID].copyOfAccumulatorRegister) + numberOfClockInterrupts + 1;
+void OperatingSystem_MoveToTheBLOCKEDState(int PID) {
+	processTable[executingProcessID].whenToWakeUp=abs(Processor_GetAccumulator() + numberOfClockInterrupts + 1);
 	if (Heap_add(executingProcessID, sleepingProcessesQueue, QUEUE_WAKEUP, &numberOfSleepingProcesses, PROCESSTABLEMAXSIZE)>=0){
-		processTable[executingProcessID].state=BLOCKED;
-		OperatingSystem_SaveContext(executingProcessID);
-		OperatingSystem_PrintStatus();
+
+		int prevState = processTable[PID].state;
+		
+		processTable[PID].state=BLOCKED;
+		OperatingSystem_SaveContext(PID);
+		OperatingSystem_ShowTime(SYSPROC);
+		ComputerSystem_DebugMessage(111, SYSPROC, PID,programList[processTable[PID].programListIndex]->executableName, 
+					statesNames[prevState], statesNames[processTable[PID].state]);
+		
+
 	}
 }
