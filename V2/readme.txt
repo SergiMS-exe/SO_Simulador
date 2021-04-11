@@ -16,3 +16,11 @@ Ej 5:
     Añadidas las variables necesarias en el PCB y en OperatingSystem.c y OperatingSystem.h
     Añadida la llamada SYSCALL_SLEEP y en su case correspondiente, llamada a la funcion OperatingSystem_MoveToTheBLOCKEDState, donde se calcula whenToWakeUp y se hacen otras operaciones necesarias
     , ademas de llamar a PintStatus al final del metodo
+Ej 6:
+    Añadido un bucle en la funcion OperatingSystem_HandleClockInterrupt para comprobar qué procesos tienen que ser despertados. Si tienen que despertarse se llama a una funcion que lo hace
+    Tras mostrar el estado del simulador si ha habido algun cambio, se comprueba si el proceso actual es el que mas prioridad tiene. Si no es asi, se echa y se ejecuta el mas prioritario mostrando el mensaje pertinente
+    Si ha habido algun cambio de proceso, se vuelve a imprimir el estado del sistema
+Ej 7:
+    Se llama a PrintStatus en los puntos indicados: Al final del tratamiento de SYSCALL_YIELD si ha habido cambio de proceso; al final del tratamiento de SYSCALL_END; al final del manejador de excepciones y al final de la ejecucion del PLP si se ha creado algun proceso
+Ej 8:
+    Se ha comentado la llamada a la funcion que imprime la cola de listos dentro de la funcion OperatingSystem_MoveToTheREADYState
