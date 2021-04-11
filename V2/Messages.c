@@ -65,7 +65,6 @@ int Messages_Load_Messages(int numberOfmessages, char * nameFileMessage) {
 	// for (rc=0;rc<NUMBEROFMSGS;rc++)
 	// 	printf("Position: %d, Message number: %d, Message format: %s\n",rc,DebugMessages[rc].number,DebugMessages[rc].format); 
 
-	ComputerSystem_ShowTime(POWERON);
 	// printf("%d Messages Loaded\n",nm);
 	ComputerSystem_DebugMessage(63,POWERON,(numberOfmessages-initialMessage), nameFileMessage);
 

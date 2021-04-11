@@ -552,7 +552,7 @@ void OperatingSystem_HandleClockInterrupt() {
 	if (counter>0) {
 		OperatingSystem_PrintStatus();
 		//V2 Ej 6c
-		int mostPriority = Heap_getFirst(readyToRunQueue[USERPROCESSQUEUE],numberOfReadyToRunProcesses[USERPROCESSQUEUE]);
+		pid = Heap_getFirst(readyToRunQueue[USERPROCESSQUEUE],numberOfReadyToRunProcesses[USERPROCESSQUEUE]);
 		if (processTable[executingProcessID].queueID!=DAEMONPROGRAM && processTable[executingProcessID].priority<processTable[mostPriority].priority){
 			pid = OperatingSystem_ShortTermScheduler();
 			OperatingSystem_ShowTime(SHORTTERMSCHEDULE);
