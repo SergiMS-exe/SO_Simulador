@@ -116,7 +116,6 @@ int Asserts_LoadAsserts() {
 
  mf=fopen(ASSERTS_FILE, "r");
  if (mf==NULL) {
-	ComputerSystem_ShowTime(POWERON);
 	ComputerSystem_DebugMessage(82,POWERON,0);
 	return -1;
   }
@@ -165,7 +164,6 @@ int Asserts_LoadAsserts() {
 	if (strcmp(time,"*")) {
       rc=sscanf(time,"%d",&a.time);
 	  if (rc==0){
-		ComputerSystem_ShowTime(POWERON);
  		// printf("Illegal time format in line %d of file %s\n",lineNumber,ASSERTS_FILE);
 		ComputerSystem_DebugMessage(82,POWERON,lineNumber,ASSERTS_FILE);
 		continue;
@@ -232,7 +230,6 @@ int Asserts_LoadAsserts() {
    }
    else
 	   asserts[numberAsserts].time=-1; // not necesary...
-   ComputerSystem_ShowTime(POWERON);
    ComputerSystem_DebugMessage(82,POWERON,numberAsserts);
 
    return numberAsserts;
