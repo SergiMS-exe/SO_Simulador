@@ -1,6 +1,8 @@
 #ifndef COMPUTERSYSTEM_H
 #define COMPUTERSYSTEM_H
 
+#define ARRIVALQUEUE            // V3 Ej0b
+
 #include "Simulator.h"
 #include "ComputerSystemBase.h"
 
@@ -26,6 +28,8 @@ void ComputerSystem_PrintProgramList();
 #define SHORTTERMSCHEDULE 's'   // Only messages related to the short term scheduler of the operating system
 #define ERROR 'e'				// Error messages
 #define CLOCK 'c'				// Clock time messages
+
+
 
 // Basic data to collect about every program to be created
 // User programs specified in the command line: name of the file, the time of its arrival time

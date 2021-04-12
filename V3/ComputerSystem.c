@@ -16,6 +16,10 @@ PROGRAMS_DATA *programList[PROGRAMSMAXNUMBER];
 
 // Students messages 
 char STUDENT_MESSAGES_FILE[MAXIMUMLENGTH]="messagesSTD.txt";
+ 
+// V3 Ej 0a
+heapItem arrivalTimeQueue[PROGRAMSMAXNUMBER];
+int numberOfProgramsInArrivalTimeQueue=0;
 
 // Powers on of the Computer System.
 void ComputerSystem_PowerOn(int argc, char *argv[], int paramIndex) {
