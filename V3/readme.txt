@@ -1,2 +1,7 @@
 Ej 0:
-    
+    a. Añadida la estructura de datos para trabajar con la arrivalQueue
+    b. Añadida la instruccion en CS.h para definir la arrivalQueue
+    c. LLamada a CS_FillInArrivalTimeQueue justo antes de llamar al PLP en OS_Initialize
+    d. LLamada a OS_PrintStatus justo despues de la llamada a la funcion anterior
+Ej 1:
+    Creada el nuevo mensaje para mostrar la instruccion y la que devuelve el PID del proceso en ejecucion (ha habido que añadir una declaracion en OS.h para evitar warnings)

@@ -30,6 +30,7 @@ int OperatingSystem_GiveControl();
 void OperatingSystem_HandleClockInterrupt();
 void OperatingSystem_MoveToTheBLOCKEDState();
 
+
 // The process table
 PCB processTable[PROCESSTABLEMAXSIZE];
 
@@ -591,7 +592,10 @@ void OperatingSystem_MoveToTheBLOCKEDState(int PID) {
 		OperatingSystem_ShowTime(SYSPROC);
 		ComputerSystem_DebugMessage(111, SYSPROC, PID,programList[processTable[PID].programListIndex]->executableName, 
 					statesNames[prevState], statesNames[processTable[PID].state]);
-		
-
 	}
+}
+
+//V3 Ej 1
+int OperatingSystem_GetExecutingProcessID() {
+	return executingProcessID;
 }

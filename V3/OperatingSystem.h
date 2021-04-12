@@ -65,5 +65,6 @@ void OperatingSystem_InterruptLogic(int);
 // void HOOKEABLE(OperatingSystem_PrepareDaemons)();
 // void OperatingSystem_PrepareDaemons();
 int OperatingSystem_PrepareStudentsDaemons(int);
+int OperatingSystem_GetExecutingProcessID();
 
 #endif
