@@ -153,53 +153,47 @@ int OperatingSystem_PrepareStudentsDaemons(int programListDaemonsBase) {
 int OperatingSystem_LongTermScheduler() {
   
 	int PID, i,
-		numberOfSuccessfullyCreatedProcesses=0;
+		numberOfSuccessfullyCreatedProcesses=0, newProgram;
 	
-	for (i=0; programList[i]!=NULL && i<PROGRAMSMAXNUMBER ; i++) {
+	newProgram=OperatingSystem_IsThereANewProgram();
+
+	while (newProgram==YES){
+		i=Heap_poll(arrivalTimeQueue,QUEUE_ARRIVAL,&numberOfProgramsInArrivalTimeQueue);
 		PID=OperatingSystem_CreateProcess(i);
 		switch (PID) {
-		case NOFREEENTRY:
-			OperatingSystem_ShowTime(ERROR);
-			ComputerSystem_DebugMessage(103, ERROR, programList[i]->executableName);
-			break;
-		case PROGRAMDOESNOTEXIST:
-			OperatingSystem_ShowTime(ERROR);
-			ComputerSystem_DebugMessage(104, ERROR, programList[i]->executableName, "it does not exists");
-			break;
-		case PROGRAMNOTVALID:
-			OperatingSystem_ShowTime(ERROR);
-			ComputerSystem_DebugMessage(104, ERROR, programList[i]->executableName, "invalid priority or size");
-			break;
-		case TOOBIGPROCESS:
-			OperatingSystem_ShowTime(ERROR);
-			ComputerSystem_DebugMessage(105, ERROR, programList[i]->executableName);
-			break;
-		default:
-			numberOfSuccessfullyCreatedProcesses++;
-			if (programList[i]->type==USERPROGRAM) 
-				numberOfNotTerminatedUserProcesses++;
-			// Move process to the ready state
-			OperatingSystem_MoveToTheREADYState(PID);
-			break;
+			case NOFREEENTRY:
+				OperatingSystem_ShowTime(ERROR);
+				ComputerSystem_DebugMessage(103, ERROR, programList[i]->executableName);
+				break;
+			case PROGRAMDOESNOTEXIST:
+				OperatingSystem_ShowTime(ERROR);
+				ComputerSystem_DebugMessage(104, ERROR, programList[i]->executableName, "it does not exists");
+				break;
+			case PROGRAMNOTVALID:
+				OperatingSystem_ShowTime(ERROR);
+				ComputerSystem_DebugMessage(104, ERROR, programList[i]->executableName, "invalid priority or size");
+				break;
+			case TOOBIGPROCESS:
+				OperatingSystem_ShowTime(ERROR);
+				ComputerSystem_DebugMessage(105, ERROR, programList[i]->executableName);
+				break;
+			default:
+				numberOfSuccessfullyCreatedProcesses++;
+				if (programList[i]->type==USERPROGRAM) 
+					numberOfNotTerminatedUserProcesses++;
+				// Move process to the ready state
+				OperatingSystem_MoveToTheREADYState(PID);
+				break;
 		}
+		newProgram=OperatingSystem_IsThereANewProgram();
 	}
-	if (numberOfSuccessfullyCreatedProcesses==0)
-		return 0;
-	
-	if (numberOfNotTerminatedUserProcesses==0) {
-		if (executingProcessID==sipID) {
-			// finishing sipID, change PC to address of OS HALT instruction
-			OperatingSystem_TerminatingSIP();
-			OperatingSystem_ShowTime(SHUTDOWN);
-			ComputerSystem_DebugMessage(99,SHUTDOWN,"The system will shut down now...\n");
-		}
-		// Simulation must finish, telling sipID to finish
+	if (numberOfSuccessfullyCreatedProcesses==0 && newProgram==EMPTYQUEUE)
 		OperatingSystem_ReadyToShutdown();
-	}
-
-	//V2 Ej 7d
-	OperatingSystem_PrintStatus();
-
+	
+	else
+		//V2 Ej 7d
+		OperatingSystem_PrintStatus();
+	
 	// Return the number of succesfully created processes
 	return numberOfSuccessfullyCreatedProcesses;
 }
