@@ -30,7 +30,6 @@ int OperatingSystem_GiveControl();
 void OperatingSystem_HandleClockInterrupt();
 void OperatingSystem_MoveToTheBLOCKEDState();
 
-
 // The process table
 PCB processTable[PROCESSTABLEMAXSIZE];
 
@@ -98,10 +97,6 @@ void OperatingSystem_Initialize(int daemonsIndex) {
 	// Include in program list  all system daemon processes
 	OperatingSystem_PrepareDaemons(daemonsIndex);
 	
-	ComputerSystem_FillInArrivalTimeQueue(); //V3 Ej 0c
-
-	OperatingSystem_PrintStatus(); //V3 Ej 0d
-
 	// Create all user processes from the information given in the command line
 	int createdProcesses = OperatingSystem_LongTermScheduler();
 	//V1 Ej 15
@@ -153,47 +148,53 @@ int OperatingSystem_PrepareStudentsDaemons(int programListDaemonsBase) {
 int OperatingSystem_LongTermScheduler() {
   
 	int PID, i,
-		numberOfSuccessfullyCreatedProcesses=0, newProgram;
+		numberOfSuccessfullyCreatedProcesses=0;
 	
-	newProgram=OperatingSystem_IsThereANewProgram();
-
-	while (newProgram==YES){
-		i=Heap_poll(arrivalTimeQueue,QUEUE_ARRIVAL,&numberOfProgramsInArrivalTimeQueue);
+	for (i=0; programList[i]!=NULL && i<PROGRAMSMAXNUMBER ; i++) {
 		PID=OperatingSystem_CreateProcess(i);
 		switch (PID) {
-			case NOFREEENTRY:
-				OperatingSystem_ShowTime(ERROR);
-				ComputerSystem_DebugMessage(103, ERROR, programList[i]->executableName);
-				break;
-			case PROGRAMDOESNOTEXIST:
-				OperatingSystem_ShowTime(ERROR);
-				ComputerSystem_DebugMessage(104, ERROR, programList[i]->executableName, "it does not exists");
-				break;
-			case PROGRAMNOTVALID:
-				OperatingSystem_ShowTime(ERROR);
-				ComputerSystem_DebugMessage(104, ERROR, programList[i]->executableName, "invalid priority or size");
-				break;
-			case TOOBIGPROCESS:
-				OperatingSystem_ShowTime(ERROR);
-				ComputerSystem_DebugMessage(105, ERROR, programList[i]->executableName);
-				break;
-			default:
-				numberOfSuccessfullyCreatedProcesses++;
-				if (programList[i]->type==USERPROGRAM) 
-					numberOfNotTerminatedUserProcesses++;
-				// Move process to the ready state
-				OperatingSystem_MoveToTheREADYState(PID);
-				break;
+		case NOFREEENTRY:
+			OperatingSystem_ShowTime(ERROR);
+			ComputerSystem_DebugMessage(103, ERROR, programList[i]->executableName);
+			break;
+		case PROGRAMDOESNOTEXIST:
+			OperatingSystem_ShowTime(ERROR);
+			ComputerSystem_DebugMessage(104, ERROR, programList[i]->executableName, "it does not exists");
+			break;
+		case PROGRAMNOTVALID:
+			OperatingSystem_ShowTime(ERROR);
+			ComputerSystem_DebugMessage(104, ERROR, programList[i]->executableName, "invalid priority or size");
+			break;
+		case TOOBIGPROCESS:
+			OperatingSystem_ShowTime(ERROR);
+			ComputerSystem_DebugMessage(105, ERROR, programList[i]->executableName);
+			break;
+		default:
+			numberOfSuccessfullyCreatedProcesses++;
+			if (programList[i]->type==USERPROGRAM) 
+				numberOfNotTerminatedUserProcesses++;
+			// Move process to the ready state
+			OperatingSystem_MoveToTheREADYState(PID);
+			break;
 		}
-		newProgram=OperatingSystem_IsThereANewProgram();
 	}
-	if (numberOfSuccessfullyCreatedProcesses==0 && newProgram==EMPTYQUEUE)
+	if (numberOfSuccessfullyCreatedProcesses==0)
+		return 0;
+	
+	if (numberOfNotTerminatedUserProcesses==0) {
+		if (executingProcessID==sipID) {
+			// finishing sipID, change PC to address of OS HALT instruction
+			OperatingSystem_TerminatingSIP();
+			OperatingSystem_ShowTime(SHUTDOWN);
+			ComputerSystem_DebugMessage(99,SHUTDOWN,"The system will shut down now...\n");
+		}
+		// Simulation must finish, telling sipID to finish
 		OperatingSystem_ReadyToShutdown();
-	
-	else
-		//V2 Ej 7d
-		OperatingSystem_PrintStatus();
-	
+	}
+
+	//V2 Ej 7d
+	OperatingSystem_PrintStatus();
+
 	// Return the number of succesfully created processes
 	return numberOfSuccessfullyCreatedProcesses;
 }
@@ -555,8 +556,6 @@ void OperatingSystem_HandleClockInterrupt() {
 			counter++;
 		}
 	}
-	OperatingSystem_LongTermScheduler(); // V3 ej 3a
-
 	//V2 Ej 6b
 	if (counter>0) {
 		OperatingSystem_PrintStatus();
@@ -588,10 +587,7 @@ void OperatingSystem_MoveToTheBLOCKEDState(int PID) {
 		OperatingSystem_ShowTime(SYSPROC);
 		ComputerSystem_DebugMessage(111, SYSPROC, PID,programList[processTable[PID].programListIndex]->executableName, 
 					statesNames[prevState], statesNames[processTable[PID].state]);
-	}
-}
+		
 
-//V3 Ej 1
-int OperatingSystem_GetExecutingProcessID() {
-	return executingProcessID;
+	}
 }
