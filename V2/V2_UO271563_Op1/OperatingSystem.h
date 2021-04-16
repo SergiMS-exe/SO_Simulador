@@ -50,6 +50,7 @@ typedef struct {
 	int programListIndex;
 	int queueID;
 	int whenToWakeUp;  // Exercise 5-a of V2
+	int systemCalls; //Examen-Abril 2021
 } PCB;
 
 // These "extern" declaration enables other source code files to gain access

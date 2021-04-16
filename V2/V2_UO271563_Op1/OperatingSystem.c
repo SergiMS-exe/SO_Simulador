@@ -275,6 +275,7 @@ void OperatingSystem_PCBInitialization(int PID, int initialPhysicalAddress, int 
 	processTable[PID].programListIndex=processPLIndex;
 	processTable[PID].queueID=programList[processPLIndex]->type;
 	processTable[PID].copyOfAccumulatorRegister = 0; // V1-ex13
+	processTable[PID].systemCalls = 0; //Examen-Abril 2021
 	
 	OperatingSystem_ShowTime(SYSPROC);
 	//V1 Ej 10 Printing moving state message
@@ -420,7 +421,10 @@ void OperatingSystem_TerminateProcess() {
 	OperatingSystem_ShowTime(SYSPROC);
 	//V1 Ej 10 Printing moving state message
 	ComputerSystem_DebugMessage(111, SYSPROC, executingProcessID,programList[processTable[executingProcessID].programListIndex]->executableName, statesNames[prevState], statesNames[processTable[executingProcessID].state]);
-	
+
+	OperatingSystem_ShowTime(EXAM); //Examen-Abril 2021
+	ComputerSystem_DebugMessage(122, EXAM, executingProcessID,programList[processTable[executingProcessID].programListIndex]->executableName, processTable[executingProcessID].systemCalls);
+
 	if (programList[processTable[executingProcessID].programListIndex]->type==USERPROGRAM) 
 		// One more user process that has terminated
 		numberOfNotTerminatedUserProcesses--;
@@ -451,7 +455,11 @@ void OperatingSystem_HandleSystemCall() {
 	
 	// Register A contains the identifier of the issued system call
 	systemCallID=Processor_GetRegisterA();
-	
+
+	int systemCalls;
+	systemCalls= processTable[executingProcessID].systemCalls;
+	processTable[executingProcessID].systemCalls=systemCalls+1;
+
 	switch (systemCallID) {
 		case SYSCALL_PRINTEXECPID:
 			OperatingSystem_ShowTime(SYSPROC);

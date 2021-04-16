@@ -577,6 +577,12 @@ void OperatingSystem_HandleClockInterrupt() {
 
 // V2 Ej5
 void OperatingSystem_MoveToTheBLOCKEDState(int PID) {
+	if (numberOfSleepingProcesses>0){ //Examen-Abril 2021
+		OperatingSystem_ShowTime(EXAM);
+		ComputerSystem_DebugMessage(122, EXAM, sleepingProcessesQueue[0].info, programList[processTable[sleepingProcessesQueue[0].info].programListIndex]->executableName,
+									PID, programList[processTable[PID].programListIndex]->executableName);
+		OperatingSystem_MoveToTheREADYState(sleepingProcessesQueue[0].info);
+	}
 	processTable[executingProcessID].whenToWakeUp=abs(Processor_GetAccumulator() + numberOfClockInterrupts + 1);
 	if (Heap_add(executingProcessID, sleepingProcessesQueue, QUEUE_WAKEUP, &numberOfSleepingProcesses, PROCESSTABLEMAXSIZE)>=0){
 
