@@ -526,8 +526,7 @@ int OperatingSystem_GiveControl() {
 	int i,previousPID, currentPID;
 	previousPID=executingProcessID;
 	i=processTable[executingProcessID].queueID;
-	if (processTable[previousPID].priority==processTable[readyToRunQueue[i][0].info].priority && previousPID!=readyToRunQueue[i][0].info 
-		&& &numberOfReadyToRunProcesses[USERPROGRAM]>0) {
+	if (numberOfReadyToRunProcesses[USERPROGRAM]>0 && processTable[previousPID].priority==processTable[readyToRunQueue[i][0].info].priority && previousPID!=readyToRunQueue[i][0].info) {
 		currentPID = OperatingSystem_ShortTermScheduler();
 		OperatingSystem_ShowTime(SHORTTERMSCHEDULE);
 		ComputerSystem_DebugMessage(115, SHORTTERMSCHEDULE, previousPID, programList[processTable[previousPID].programListIndex]->executableName, 

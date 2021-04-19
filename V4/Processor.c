@@ -23,6 +23,7 @@ BUSDATACELL registerMBR_CPU; // Memory Buffer Register
 int registerCTRL_CPU; // Control bus Register
 
 int registerA_CPU; // General purpose register
+int registerB_CPU; 
 
 int interruptLines_CPU; // Processor interrupt lines
 
@@ -226,9 +227,9 @@ void Processor_DecodeAndExecuteInstruction() {
 			// Tell the main memory controller to read
 			registerCTRL_CPU=CTRLREAD;
 			// Send to the main memory controller the operation
-			Buses_write_ControlBus_From_To(CPU,MMU);
 			Processor_CheckOverflow(operand1,registerMBR_CPU.cell);
 			registerAccumulator_CPU=operand1+registerMBR_CPU.cell;
+			Buses_write_ControlBus_From_To(CPU,MMU);
 			registerPC_CPU++;
 			break;
 
