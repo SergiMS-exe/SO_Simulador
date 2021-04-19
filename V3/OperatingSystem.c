@@ -555,10 +555,11 @@ void OperatingSystem_HandleClockInterrupt() {
 			counter++;
 		}
 	}
-	OperatingSystem_LongTermScheduler(); // V3 ej 3a
+	int plp;
+	plp=OperatingSystem_LongTermScheduler(); // V3 ej 3a
 
 	//V2 Ej 6b
-	if (counter>0) {
+	if (counter>0 || plp>0) { // plp>0 / V3 Ej 3a
 		OperatingSystem_PrintStatus();
 		//V2 Ej 6c
 		int mostPriority = Heap_getFirst(readyToRunQueue[USERPROCESSQUEUE],numberOfReadyToRunProcesses[USERPROCESSQUEUE]);
