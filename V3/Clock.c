@@ -8,7 +8,9 @@ int tics=0;
 void Clock_Update() {
 
 	tics++;
-    // ComputerSystem_DebugMessage(97,CLOCK,tics);
+    if (tics>=intervalBetweenInterrupts && tics%intervalBetweenInterrupts==0){
+    	Processor_RaiseInterrupt(CLOCKINT_BIT); //V2 Ej 2
+  	}
 
 }
 
