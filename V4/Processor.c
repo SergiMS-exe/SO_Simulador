@@ -295,3 +295,6 @@ char * Processor_ShowPSW(){
 
 /////////////////////////////////////////////////////////
 //  New functions below this line  //////////////////////
+int Processor_GetRegisterB() { //V4 ej 2
+  return registerB_CPU;
+}

@@ -2,6 +2,7 @@
 #include "OperatingSystemBase.h"
 #include "MMU.h"
 #include "Processor.h"
+#include "ProcessorBase.h"
 #include "Buses.h"
 #include "Heap.h"
 #include <string.h>
@@ -397,9 +398,22 @@ void OperatingSystem_SaveContext(int PID) {
 // Exception management routine
 void OperatingSystem_HandleException() {
   
-	OperatingSystem_ShowTime(SYSPROC);
-	// Show message "Process [executingProcessID] has generated an exception and is terminating\n"
-	ComputerSystem_DebugMessage(71,SYSPROC,executingProcessID,programList[processTable[executingProcessID].programListIndex]->executableName);
+	OperatingSystem_ShowTime(INTERRUPT);
+	// Show message "Process_has_caused_an_exception_(exceptionType)_and_is_being_terminated\n"
+	switch (Processor_GetRegisterB()) { //Ej 2 V4
+		case DIVISIONBYZERO:
+			ComputerSystem_DebugMessage(140,INTERRUPT,executingProcessID,programList[processTable[executingProcessID].programListIndex]->executableName, "division by zero");
+			break;
+		case INVALIDADDRESS:
+			ComputerSystem_DebugMessage(140,INTERRUPT,executingProcessID,programList[processTable[executingProcessID].programListIndex]->executableName, "invalid address");
+			break;
+		case INVALIDPROCESSORMODE:
+			ComputerSystem_DebugMessage(140,INTERRUPT,executingProcessID,programList[processTable[executingProcessID].programListIndex]->executableName, "invalid pricessor mode");
+			break;
+		case INVALIDINSTRUCTION:
+			ComputerSystem_DebugMessage(140,INTERRUPT,executingProcessID,programList[processTable[executingProcessID].programListIndex]->executableName, "invalid instruction");
+			break;
+	}
 	
 	OperatingSystem_TerminateProcess();
 

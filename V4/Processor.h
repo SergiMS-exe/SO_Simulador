@@ -32,5 +32,6 @@ void Processor_ManageInterrupts();
 char * Processor_ShowPSW();
 int Processor_GetCTRL();
 void Processor_SetCTRL(int);
+int Processor_GetRegisterB(); //V4 Ej2
 
 #endif
