@@ -19,7 +19,7 @@ void MMU_SetCTRL (int ctrl) {
 	switch (registerCTRL_MMU) {
   	case CTRLREAD:
 			if (Processor_PSW_BitState(EXECUTION_MODE_BIT)){ // Protected mode
-				if (registerMAR_MMU < MAINMEMORYSIZE){
+				if (registerMAR_MMU < MAINMEMORYSIZE && registerMAR_MMU>=0){ //V4 Ej 1d
 					// Send to the main memory HW the physical address to write in
 					Buses_write_AddressBus_From_To(MMU, MAINMEMORY);
 					// Tell the main memory HW to read
@@ -31,10 +31,12 @@ void MMU_SetCTRL (int ctrl) {
 				else {
 					// Fail
 					registerCTRL_MMU |= CTRL_FAIL;
+					Processor_RaiseException(INVALIDADDRESS); //V4 Ej1d
+
 				}
 			}
 			else // Non-Protected mode
-				if (registerMAR_MMU<registerLimit_MMU) { 
+				if (registerMAR_MMU<registerLimit_MMU && registerMAR_MMU>=0) { //V4 Ej 1d
 					// Physical address = logical address + base register
 					registerMAR_MMU+=registerBase_MMU;
 					// Send to the main memory HW the physical address to write in
@@ -48,11 +50,12 @@ void MMU_SetCTRL (int ctrl) {
 				else {
 					// Fail
 					registerCTRL_MMU |= CTRL_FAIL;
+					Processor_RaiseException(INVALIDADDRESS); //V4 Ej 1d
 				}
 			break;
   	case CTRLWRITE:
 			if (Processor_PSW_BitState(EXECUTION_MODE_BIT)) // Protected mode
-				if (registerMAR_MMU < MAINMEMORYSIZE) {
+				if (registerMAR_MMU < MAINMEMORYSIZE && registerMAR_MMU>=0) { //V4 Ej 1d
 					// Send to the main memory HW the physical address to write in
 					Buses_write_AddressBus_From_To(MMU, MAINMEMORY);
 					// Tell the main memory HW to read
@@ -64,9 +67,10 @@ void MMU_SetCTRL (int ctrl) {
 				else {
 					// Fail
 					registerCTRL_MMU |= CTRL_FAIL;
+					Processor_RaiseException(INVALIDADDRESS); //V4 Ej 1d
 				}
 			else   // Non-Protected mode
-				if (registerMAR_MMU<registerLimit_MMU) {
+				if (registerMAR_MMU<registerLimit_MMU && registerMAR_MMU>=0) { //V4 Ej 1d
 					// Physical address = logical address + base register
 					registerMAR_MMU+=registerBase_MMU;
 					// Send to the main memory HW the physical address to read from
@@ -80,10 +84,12 @@ void MMU_SetCTRL (int ctrl) {
 				else {
 					// Fail
 					registerCTRL_MMU |= CTRL_FAIL;
+					Processor_RaiseException(INVALIDADDRESS); //V4 Ej 1d
 				}
   			break;
   		default:
 				registerCTRL_MMU |= CTRL_FAIL;
+				Processor_RaiseException(INVALIDADDRESS); //V4 Ej 1d
 				break;
   	}
   	// registerCTRL_MMU return value was CTRL_SUCCESS or CTRL_FAIL
