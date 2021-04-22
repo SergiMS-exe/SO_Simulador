@@ -226,9 +226,9 @@ void Processor_DecodeAndExecuteInstruction() {
 			// Tell the main memory controller to read
 			registerCTRL_CPU=CTRLREAD;
 			// Send to the main memory controller the operation
-			Buses_write_ControlBus_From_To(CPU,MMU);
 			Processor_CheckOverflow(operand1,registerMBR_CPU.cell);
 			registerAccumulator_CPU=operand1+registerMBR_CPU.cell;
+			Buses_write_ControlBus_From_To(CPU,MMU);
 			registerPC_CPU++;
 			break;
 
