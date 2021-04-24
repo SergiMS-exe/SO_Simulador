@@ -13,3 +13,6 @@ Ej 4:
     En el switch de OperatingSystem_HandleSystemCall se ha añadido un default que enseña el mensaje 141 que se ha pedido
     Ademas en ese caso, se ha añadido la llamada al terminateProcess para terminar el proceso
     y se imprime el estado
+Ej 5:
+    En OperatingSystem.h se ha añadido definido el nombre del fichero para que compile
+    en OperatingSystem_Initialize se ha añadido la llamada a OperatingSystem_InitializePartitionTable antes de la llamada al PLP

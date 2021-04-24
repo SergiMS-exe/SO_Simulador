@@ -5,6 +5,8 @@
 // #include "Hooks.h"
 #include <stdio.h>
 
+// Partitions configuration file name definition #define MEMCONFIG "MemConfig"
+#define MEMCOBFIG "MemConfig" //V4 ej 5
 
 #define SUCCESS 1
 #define PROGRAMDOESNOTEXIST -1

@@ -103,6 +103,8 @@ void OperatingSystem_Initialize(int daemonsIndex) {
 
 	OperatingSystem_PrintStatus(); //V3 Ej 0d
 
+	OperatingSystem_InitializePartitionTable(); //V4 Ej 5
+
 	// Create all user processes from the information given in the command line
 	int createdProcesses = OperatingSystem_LongTermScheduler();
 	//V1 Ej 15
