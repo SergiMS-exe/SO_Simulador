@@ -235,8 +235,8 @@ void Processor_DecodeAndExecuteInstruction() {
 
 		// Unknown instruction
 		default : 
-			operationCode=NONEXISTING_INST;
 			registerPC_CPU++;
+			Processor_RaiseException(INVALIDINSTRUCTION); //V4 Ej 3a
 			break;
 	}
 	

@@ -497,6 +497,17 @@ void OperatingSystem_HandleSystemCall() {
 			OperatingSystem_Dispatch(currentPID);
 			OperatingSystem_PrintStatus();
 			break;
+
+		//V4 ej 4
+		default:
+			//V4 ej 4a
+			OperatingSystem_ShowTime(INTERRUPT);
+			ComputerSystem_DebugMessage(141,INTERRUPT,executingProcessID,programList[processTable[executingProcessID].programListIndex]->executableName, systemCallID);
+			//V4 ej 4b
+			OperatingSystem_TerminateProcess();
+			//V4 ej 4c
+			OperatingSystem_PrintStatus();
+			break;
 	}
 }
 	
