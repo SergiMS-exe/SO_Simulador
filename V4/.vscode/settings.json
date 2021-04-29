@@ -3,5 +3,6 @@
     "files.associations": {
         "*.def": "c"
     },
+    "C_Cpp.dimInactiveRegions": false,
 
 }

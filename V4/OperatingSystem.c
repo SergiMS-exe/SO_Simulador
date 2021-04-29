@@ -30,7 +30,7 @@ void OperatingSystem_PrintReadyToRunQueue();
 int OperatingSystem_GiveControl();
 void OperatingSystem_HandleClockInterrupt();
 void OperatingSystem_MoveToTheBLOCKEDState();
-
+int mejorAjuste(int);
 
 // The process table
 PCB processTable[PROCESSTABLEMAXSIZE];
@@ -95,15 +95,15 @@ void OperatingSystem_Initialize(int daemonsIndex) {
 	}
 	// Initialization of the interrupt vector table of the processor
 	Processor_InitializeInterruptVectorTable(OS_address_base+2);
-		
+	
+	OperatingSystem_InitializePartitionTable(); //V4 Ej 5
+
 	// Include in program list  all system daemon processes
 	OperatingSystem_PrepareDaemons(daemonsIndex);
 	
 	ComputerSystem_FillInArrivalTimeQueue(); //V3 Ej 0c
 
 	OperatingSystem_PrintStatus(); //V3 Ej 0d
-
-	OperatingSystem_InitializePartitionTable(); //V4 Ej 5
 
 	// Create all user processes from the information given in the command line
 	int createdProcesses = OperatingSystem_LongTermScheduler();
@@ -235,8 +235,8 @@ int OperatingSystem_CreateProcess(int indexOfExecutableProgram) {
 	// Obtain enough memory space
  	loadingPhysicalAddress=OperatingSystem_ObtainMainMemory(processSize, PID);
 
-	if (loadingPhysicalAddress==TOOBIGPROCESS)
-		return TOOBIGPROCESS;
+	if (loadingPhysicalAddress==TOOBIGPROCESS || loadingPhysicalAddress==MEMORYFULL)
+		return loadingPhysicalAddress; //Can be TOOBIGPROCESS or MEMORYFULL
 
 	// Load program in the allocated memory
 	int programLoaded = OperatingSystem_LoadProgram(programFile, loadingPhysicalAddress, processSize);
@@ -254,15 +254,58 @@ int OperatingSystem_CreateProcess(int indexOfExecutableProgram) {
 	return PID;
 }
 
+int mejorAjuste(int processSize){ //v4 ej 6a
+	int i, chosen=-3;
+	bool full=true; 
+
+	for (i=0; i<PARTITIONTABLEMAXSIZE; i++) { //Bucle que recorre la lista de 
+		if (partitionsTable[i].PID==NOPROCESS){
+			if (full)
+				full=false;
+			if (partitionsTable[i].size>=processSize){
+				if (partitionsTable[i].size==processSize) //Si el tamaño de la parti9cion es igual al del proceso, no hay más que mirar
+					return i;
+				else {
+					if (full)
+						full=false;
+					if (chosen==-3) //Checkeamos si se ha escogido alguna particion buena
+						chosen=i; //Chosen es la posicion de la particion con mejor ajuste
+					if (partitionsTable[i].size<partitionsTable[chosen].size)
+						chosen=i; //Si la particion que miramos es mas pequeña que la mejor, cambiamos la mejor
+				}
+			}
+		}
+	}
+	if (full)
+		return MEMORYFULL;
+	if (chosen==-3)
+		return TOOBIGPROCESS;
+	else 
+		return chosen;
+}
 
 // Main memory is assigned in chunks. All chunks are the same size. A process
 // always obtains the chunk whose position in memory is equal to the processor identifier
 int OperatingSystem_ObtainMainMemory(int processSize, int PID) {
-
- 	if (processSize>MAINMEMORYSECTIONSIZE)
-		return TOOBIGPROCESS;
 	
- 	return PID*MAINMEMORYSECTIONSIZE;
+	//V4 ej 6b
+	OperatingSystem_ShowTime(SYSMEM);
+	ComputerSystem_DebugMessage(142,SYSMEM,PID, programList[processTable[PID].programListIndex]->executableName, processSize);
+
+	//V4 ej 6a
+	int mejor = mejorAjuste(processSize);
+	
+	if (mejor==MEMORYFULL || mejor==TOOBIGPROCESS) { //V4 ej 6d
+		OperatingSystem_ShowTime(ERROR);
+		ComputerSystem_DebugMessage(144,ERROR,processSize);
+		return mejor;
+	}
+	else { //V4 ej 6c
+		OperatingSystem_ShowTime(SYSMEM);
+		ComputerSystem_DebugMessage(142,SYSMEM,mejor,partitionsTable[mejor].initAddress,partitionsTable[mejor].size,
+					PID, programList[processTable[PID].programListIndex]->executableName);
+		return mejor;
+	}
 }
 
 

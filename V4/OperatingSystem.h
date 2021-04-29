@@ -6,7 +6,7 @@
 #include <stdio.h>
 
 // Partitions configuration file name definition #define MEMCONFIG "MemConfig"
-#define MEMCOBFIG "MemConfig" //V4 ej 5
+#define MEMCONFIG "MemConfig" //V4 ej 5
 
 #define SUCCESS 1
 #define PROGRAMDOESNOTEXIST -1
@@ -20,6 +20,8 @@
 #define TOOBIGPROCESS -4
 
 #define NOPROCESS -1
+
+#define MEMORYFULL-5 //V4 ej 5d
 
 // V2 Ej 5c
 #define SLEEPINGQUEUE
