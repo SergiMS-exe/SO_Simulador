@@ -21,7 +21,7 @@
 
 #define NOPROCESS -1
 
-#define MEMORYFULL-5 //V4 ej 5d
+#define MEMORYFULL -5 //V4 ej 5d
 
 // V2 Ej 5c
 #define SLEEPINGQUEUE

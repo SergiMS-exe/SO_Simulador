@@ -31,6 +31,7 @@ int OperatingSystem_GiveControl();
 void OperatingSystem_HandleClockInterrupt();
 void OperatingSystem_MoveToTheBLOCKEDState();
 int mejorAjuste(int);
+void OperatingSystem_ReleaseMainMemory();
 
 // The process table
 PCB processTable[PROCESSTABLEMAXSIZE];
@@ -308,6 +309,7 @@ int OperatingSystem_ObtainMainMemory(int processSize, int PID) {
 		OperatingSystem_ShowTime(SYSMEM);
 		ComputerSystem_DebugMessage(143,SYSMEM,mejor,partitionsTable[mejor].initAddress,partitionsTable[mejor].size,
 					PID, programList[processTable[PID].programListIndex]->executableName);
+		partitionsTable[mejor].PID=PID;
 		return mejor;
 	}
 }
