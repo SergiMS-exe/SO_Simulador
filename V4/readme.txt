@@ -16,3 +16,11 @@ Ej 4:
 Ej 5:
     En OperatingSystem.h se ha añadido definido el nombre del fichero para que compile
     en OperatingSystem_Initialize se ha añadido la llamada a OperatingSystem_InitializePartitionTable antes de la llamada al creador de daemons
+Ej 6:
+    a. Creada la funcion mejorAjuste que escoge entre las particiones disponibles, la particion que mas se ajusta al tamaño del proceso. Llamada en ObtainMainMemory
+       La funcion devuelve MEMORYFULL si todas las particiones estan llenas
+    b, c y d. Creados y mostrados los mensajes en los casos pedidos
+    ObtainMainMemory ya no da la direccion inicial del proceso, sino la particion, por lo que despues se debe transformar en una direccion fisica
+    En terminateProcess se ha añadido una orden para liberar la particion del proceso terminado
+Ej 7:
+    Llamada a la funcion OperatingSystem_ShowPartitionTable antes y despues de la llamada a ObtainMainMemory en OS_CreateProcess

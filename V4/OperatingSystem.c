@@ -232,8 +232,12 @@ int OperatingSystem_CreateProcess(int indexOfExecutableProgram) {
 	if (processSize==PROGRAMNOTVALID || priority==PROGRAMNOTVALID)
 		return PROGRAMNOTVALID;
 
+	OperatingSystem_ShowPartitionTable("before allocating memory"); //V4 ej 7
+
 	// Obtain enough memory space
  	loadingPhysicalAddress=OperatingSystem_ObtainMainMemory(processSize, PID);
+
+	OperatingSystem_ShowPartitionTable("after allocating memory"); //V4 ej 7 
 
 	if (loadingPhysicalAddress==TOOBIGPROCESS || loadingPhysicalAddress==MEMORYFULL)
 		return loadingPhysicalAddress; //Can be TOOBIGPROCESS or MEMORYFULL
