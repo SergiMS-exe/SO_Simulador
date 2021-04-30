@@ -306,7 +306,7 @@ int OperatingSystem_ObtainMainMemory(int processSize, int PID) {
 	}
 	else { //V4 ej 6c
 		OperatingSystem_ShowTime(SYSMEM);
-		ComputerSystem_DebugMessage(142,SYSMEM,mejor,partitionsTable[mejor].initAddress,partitionsTable[mejor].size,
+		ComputerSystem_DebugMessage(143,SYSMEM,mejor,partitionsTable[mejor].initAddress,partitionsTable[mejor].size,
 					PID, programList[processTable[PID].programListIndex]->executableName);
 		return mejor;
 	}
@@ -483,6 +483,11 @@ void OperatingSystem_TerminateProcess() {
 	//V1 Ej 10 Printing moving state message
 	ComputerSystem_DebugMessage(111, SYSPROC, executingProcessID,programList[processTable[executingProcessID].programListIndex]->executableName, statesNames[prevState], statesNames[processTable[executingProcessID].state]);
 	
+	//V4 ej 8
+	OperatingSystem_ShowPartitionTable("before releasing memory");
+	OperatingSystem_ReleaseMainMemory();
+	OperatingSystem_ShowPartitionTable("after releasing memory");
+
 	if (programList[processTable[executingProcessID].programListIndex]->type==USERPROGRAM) 
 		// One more user process that has terminated
 		numberOfNotTerminatedUserProcesses--;
@@ -503,6 +508,20 @@ void OperatingSystem_TerminateProcess() {
 
 	// Assign the processor to that process
 	OperatingSystem_Dispatch(selectedProcess);
+}
+
+void OperatingSystem_ReleaseMainMemory() {
+	int i;
+
+	for (i=0; i<PARTITIONTABLEMAXSIZE; i++) {
+		if (partitionsTable[i].PID==executingProcessID) {
+			partitionsTable[i].PID=NOPROCESS;
+			OperatingSystem_ShowTime(SYSMEM);
+			ComputerSystem_DebugMessage(145,SYSMEM,i,partitionsTable[i].initAddress,partitionsTable[i].size,
+					executingProcessID, programList[processTable[executingProcessID].programListIndex]->executableName);
+			break;
+		}
+	}
 }
 
 // System call management routine

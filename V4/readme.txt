@@ -21,6 +21,7 @@ Ej 6:
        La funcion devuelve MEMORYFULL si todas las particiones estan llenas
     b, c y d. Creados y mostrados los mensajes en los casos pedidos
     ObtainMainMemory ya no da la direccion inicial del proceso, sino la particion, por lo que despues se debe transformar en una direccion fisica
-    En terminateProcess se ha añadido una orden para liberar la particion del proceso terminado
 Ej 7:
     Llamada a la funcion OperatingSystem_ShowPartitionTable antes y despues de la llamada a ObtainMainMemory en OS_CreateProcess
+Ej 8:
+    Creada la funcion OperatingSystem_ReleaseMainMemory que libera la particion del proceso terminad. Se muestran los mensajes de estado de la tabla de particiones antes y despues de hacer esto
