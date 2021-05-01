@@ -116,7 +116,7 @@ void Processor_DecodeAndExecuteInstruction() {
 		// Instruction DIV
 		case DIV_INST: 
 			if (operand2 == 0)
-				Processor_RaiseInterrupt(EXCEPTION_BIT); 
+				Processor_RaiseException(DIVISIONBYZERO); 
 			else {
 				registerAccumulator_CPU=operand1 / operand2;
 				registerPC_CPU++;
@@ -189,7 +189,7 @@ void Processor_DecodeAndExecuteInstruction() {
 			if (Processor_PSW_BitState(EXECUTION_MODE_BIT)) // Protected mode V1 Ej16
 				Processor_ActivatePSW_Bit(POWEROFF_BIT);
 			else 
-				Processor_RaiseInterrupt(EXCEPTION_BIT); //Raise an exception V1 Ej16
+				Processor_RaiseException(INVALIDPROCESSORMODE); //Raise an exception V1 Ej16
 			break;
 			  
 		// Instruction OS
@@ -205,7 +205,7 @@ void Processor_DecodeAndExecuteInstruction() {
 				Processor_UpdatePSW();
 			}
 			else 
-				Processor_RaiseInterrupt(EXCEPTION_BIT); //Raise an exception V1 Ej16
+				Processor_RaiseException(INVALIDPROCESSORMODE); //Raise an exception V1 Ej16
 			return; // Note: message show before... for operating system messages after...
 
 		// Instruction IRET
@@ -215,7 +215,7 @@ void Processor_DecodeAndExecuteInstruction() {
 				registerPSW_CPU=Processor_CopyFromSystemStack(MAINMEMORYSIZE-2);
 			}
 			else 
-				Processor_RaiseInterrupt(EXCEPTION_BIT); //Raise an exception V1 Ej16
+				Processor_RaiseException(INVALIDPROCESSORMODE); //Raise an exception V1 Ej16
 			break;
 
 		// Instruction MEMADD
@@ -234,7 +234,7 @@ void Processor_DecodeAndExecuteInstruction() {
 			break;
 
 		// Unknown instruction
-		default : 
+		default: 
 			registerPC_CPU++;
 			Processor_RaiseException(INVALIDINSTRUCTION); //V4 Ej 3a
 			break;

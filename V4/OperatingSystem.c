@@ -233,25 +233,27 @@ int OperatingSystem_CreateProcess(int indexOfExecutableProgram) {
 	if (processSize==PROGRAMNOTVALID || priority==PROGRAMNOTVALID)
 		return PROGRAMNOTVALID;
 
-	OperatingSystem_ShowPartitionTable("before allocating memory"); //V4 ej 7
-
+	processTable[PID].programListIndex=indexOfExecutableProgram; //Parche: si no me imprime mal y no puedo llamar al PCBInitialization aun
 	// Obtain enough memory space
- 	loadingPhysicalAddress=OperatingSystem_ObtainMainMemory(processSize, PID);
+ 	int partition=OperatingSystem_ObtainMainMemory(processSize, PID);
 
-	OperatingSystem_ShowPartitionTable("after allocating memory"); //V4 ej 7 
+	
 
-	if (loadingPhysicalAddress==TOOBIGPROCESS || loadingPhysicalAddress==MEMORYFULL)
-		return loadingPhysicalAddress; //Can be TOOBIGPROCESS or MEMORYFULL
+	if (partition==TOOBIGPROCESS || partition==MEMORYFULL)
+		return partition; //Can be TOOBIGPROCESS or MEMORYFULL
 
+	loadingPhysicalAddress=partitionsTable[partition].initAddress;
 	// Load program in the allocated memory
 	int programLoaded = OperatingSystem_LoadProgram(programFile, loadingPhysicalAddress, processSize);
 
 	if (programLoaded==TOOBIGPROCESS)
 		return TOOBIGPROCESS;
 	
-	// PCB initialization
-	OperatingSystem_PCBInitialization(PID, loadingPhysicalAddress, processSize, priority, indexOfExecutableProgram);
+	// PCB initialization ------ V4 Ej 6 se ha cambiado el segundo parametro para indicar la particion en la que está
+	OperatingSystem_PCBInitialization(PID, partition, processSize, priority, indexOfExecutableProgram);
 	
+	OperatingSystem_ShowPartitionTable("after allocating memory"); //V4 ej 7 
+
 	OperatingSystem_ShowTime(INIT);
 	// Show message "Process [PID] created from program [executableName]\n"
 	ComputerSystem_DebugMessage(70,INIT,PID,executableProgram->executableName);
@@ -297,6 +299,8 @@ int OperatingSystem_ObtainMainMemory(int processSize, int PID) {
 	OperatingSystem_ShowTime(SYSMEM);
 	ComputerSystem_DebugMessage(142,SYSMEM,PID, programList[processTable[PID].programListIndex]->executableName, processSize);
 
+	OperatingSystem_ShowPartitionTable("before allocating memory"); //V4 ej 7
+
 	//V4 ej 6a
 	int mejor = mejorAjuste(processSize);
 	
@@ -316,23 +320,24 @@ int OperatingSystem_ObtainMainMemory(int processSize, int PID) {
 
 
 // Assign initial values to all fields inside the PCB
-void OperatingSystem_PCBInitialization(int PID, int initialPhysicalAddress, int processSize, int priority, int processPLIndex) {
+void OperatingSystem_PCBInitialization(int PID, int partition, int processSize, int priority, int processPLIndex) {
 
 	processTable[PID].busy=1;
-	processTable[PID].initialPhysicalAddress=initialPhysicalAddress;
+	processTable[PID].initialPhysicalAddress=partitionsTable[partition].initAddress;
 	processTable[PID].processSize=processSize;
 	processTable[PID].state=NEW;
 	processTable[PID].priority=priority;
 	processTable[PID].programListIndex=processPLIndex;
 	processTable[PID].queueID=programList[processPLIndex]->type;
 	processTable[PID].copyOfAccumulatorRegister = 0; // V1-ex13
+	processTable[PID].partition=partition;
 	
 	OperatingSystem_ShowTime(SYSPROC);
 	//V1 Ej 10 Printing moving state message
 	ComputerSystem_DebugMessage(110, SYSPROC, PID, programList[processTable[PID].programListIndex]->executableName);
 	// Daemons run in protected mode and MMU use real address
 	if (programList[processPLIndex]->type == DAEMONPROGRAM) {
-		processTable[PID].copyOfPCRegister=initialPhysicalAddress;
+		processTable[PID].copyOfPCRegister=partitionsTable[partition].initAddress;
 		processTable[PID].copyOfPSWRegister= ((unsigned int) 1) << EXECUTION_MODE_BIT;
 	} 
 	else {
@@ -459,7 +464,7 @@ void OperatingSystem_HandleException() {
 			ComputerSystem_DebugMessage(140,INTERRUPT,executingProcessID,programList[processTable[executingProcessID].programListIndex]->executableName, "invalid address");
 			break;
 		case INVALIDPROCESSORMODE:
-			ComputerSystem_DebugMessage(140,INTERRUPT,executingProcessID,programList[processTable[executingProcessID].programListIndex]->executableName, "invalid pricessor mode");
+			ComputerSystem_DebugMessage(140,INTERRUPT,executingProcessID,programList[processTable[executingProcessID].programListIndex]->executableName, "invalid processor mode");
 			break;
 		case INVALIDINSTRUCTION:
 			ComputerSystem_DebugMessage(140,INTERRUPT,executingProcessID,programList[processTable[executingProcessID].programListIndex]->executableName, "invalid instruction");
